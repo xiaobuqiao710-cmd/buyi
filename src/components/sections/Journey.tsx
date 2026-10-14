@@ -151,7 +151,11 @@ function splitCampus(entry: string): { period?: string; rest: string } {
 
 function campusRole(rest: string): string {
   const cut = rest.search(/[，,；;]/)
-  return cut > 0 ? rest.slice(0, cut) : rest
+  const head = cut > 0 ? rest.slice(0, cut) : rest
+  /* 简历原文里职务常写成「任北京大学…副秘书长」，句首这个「任」是动词。
+     直接拿来当标题会读成「任北京大学法学院团委秘书处副秘书长」，像断句错位。
+     只在「任」后紧跟机构名时剥掉它，避免误伤「任某某」这类真实姓名。 */
+  return head.replace(/^任(?=[北京清华人大复旦上交浙大南大武大中山])/, '').trim()
 }
 
 /** 职务日期：走与经历卡同一套转换（"2024.11 — 2025.02" → 2024-11 / 2025-02） */
