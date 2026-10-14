@@ -330,7 +330,48 @@ ol {
 }
 
 /* 打印：去掉所有玻璃与光效，保证可读可省墨 */
+/* ============================================================================
+   打印样式
+
+   真实缺陷（实测）：招聘方可能直接「打印 / 存为 PDF」这份页面。原规则只把
+   body 的背景与文字改成黑白，但页面其余颜色仍来自**深色主题的令牌**，
+   于是打印出来是一张白底 + 白字的纸：
+     · 链接颜色 = rgb(255,255,255)，bodyBg = rgb(255,255,255) → 对比度 1:1，完全看不见
+     · --text-primary #f5f5f7、--accent #6e8bff 等同理
+   修法：打印时直接把主题令牌重绑到一套「白纸黑字」的取值，
+   而不是逐个元素去覆盖颜色 —— 后者必然漏掉后续新增的组件。
+   ========================================================================= */
 @media print {
+  :root {
+    /* 白纸黑字：与屏幕主题无关，打印恒定 */
+    --text-primary: #000;
+    --text-secondary: #1a1a1a;
+    --text-tertiary: #333;
+    --text-quaternary: #555;
+    --accent: #000;
+    --accent-soft: transparent;
+    --divider: rgba(0, 0, 0, 0.28);
+    --divider-strong: rgba(0, 0, 0, 0.45);
+    --surface-panel: transparent;
+    --glass-bg: transparent;
+    --glass-bg-strong: transparent;
+    /* 主按钮在屏幕上靠 accent 底色反白字；纸上 accent 已改成黑色，
+       底色也随之变成黑，白字仍成立 —— 但玻璃/幽灵按钮没有底色，
+       必须回到黑字，否则会印出白字白纸。 */
+    --glass-border: rgba(0, 0, 0, 0.3);
+    --glass-border-strong: rgba(0, 0, 0, 0.5);
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+
+    /* 降级掉一切会影响可读性的材质与动效 */
+    --motion-scale: 0;
+    --blur-chip: 0;
+    --blur-card: 0;
+    --blur-chrome: 0;
+    --blur-hero: 0;
+  }
+
   body::before,
   body::after {
     display: none !important;
@@ -339,7 +380,85 @@ ol {
     background: #fff;
     color: #000;
   }
+
+  /* 玻璃与面板在白纸上没有可折射物，直接去掉描边与阴影，
+     否则会印出一堆灰框 */
+  .glass,
+  .panel,
+  .glass-card,
+  .panel-card {
+    background: transparent !important;
+    border-color: var(--divider) !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* 交互态在纸上没有意义，去掉悬浮位移与指针高光 */
+  .glass-card--interactive:hover,
+  .panel-card--interactive:hover,
+  .glass-glow::after,
+  .panel-glow::after {
+    transform: none !important;
+  }
+
+  /* 导航与「向下」这类屏幕专属提示不进纸面 */
+  .chrome-bar,
+  .hero__spine,
+  .hero__cue,
+  .skip-link,
   .no-print {
     display: none !important;
+  }
+
+  /* 展开区的折叠是屏幕交互；纸面上一次印全，避免招聘方打印出五张折叠卡 */
+  .project__expand {
+    grid-template-rows: 1fr !important;
+    transition: none !important;
+  }
+  .project__expand-inner {
+    opacity: 1 !important;
+  }
+  .project__more {
+    display: none !important;
+  }
+
+  /* 无效的按钮式链接（玻璃/幽灵）在纸上没有底色，必须黑字。
+     主按钮保留反白（它的底色被上面改成了黑）。
+     这一步不依赖令牌链路，避免将来新增按钮变体时再次漏掉。 */
+  .btn--glass,
+  .btn--ghost,
+  .chip {
+    color: #000 !important;
+    background: transparent !important;
+  }
+  .btn--primary {
+    color: #fff !important;
+    background: #000 !important;
+  }
+
+  /* 链接在纸上不能只靠颜色区分，补回下划线 */
+  a {
+    text-decoration: underline;
+    color: #000;
+  }
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.8em;
+    word-break: break-all;
+  }
+
+  /* 避免标题与首行被切到两页；区块之间不留大片空白 */
+  h1, h2, h3, h4 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+  .timeline__item,
+  .work__item,
+  .project {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+  .section {
+    padding-block: 1.5rem;
   }
 }
