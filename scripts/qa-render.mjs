@@ -297,6 +297,45 @@ const PROBE_FN = `(() => {
     if(r < 4.5) out.failures.push('正文令牌对比度过低: --text-primary vs body 背景 = '+r.toFixed(2)+':1 (主题 '+out.info.dataTheme+')');
   }
 
+  /* ---------- 液态玻璃材质：在控件层且真的生效 ----------
+     站点的设计判断是「玻璃只用于控件层，不铺在内容面」。
+     这条单靠肉眼在顶部看不出来 —— 未滚动时导航是透明的，
+     只有滚动后才材质化。所以这里同时验两件事：
+       1) 哪个元素带 backdrop-filter（必须是控件，不能是内容面板/条目）；
+       2) 导航的材质化状态切换是否可逆（顶部透明 ↔ 滚动后玻璃）。 */
+  const glassEls = [];
+  document.querySelectorAll('*').forEach(el => {
+    const cs = getComputedStyle(el);
+    const bf = cs.backdropFilter || cs.webkitBackdropFilter;
+    if(!bf || bf === 'none') return;
+    const r = el.getBoundingClientRect();
+    if(r.width <= 0 || r.height <= 0) return;
+    glassEls.push({ cls: el.className.toString(), bf, w: Math.round(r.width), h: Math.round(r.height) });
+  });
+  out.info.glassCount = glassEls.length;
+  out.info.glassEls = glassEls.map(g => g.cls.slice(0,40));
+
+  /* 内容面不得使用玻璃：这些类名是内容条目/卡片，出现 backdrop-filter 说明
+     「玻璃只用于控件层」这条设计判断被破坏了 */
+  /* 注意：不能只判断「类名里是否含 project」。玻璃按钮会同时带控件类与内容修饰类
+     （例如 btn btn--glass btn--sm project__link，修饰类只用于布局微调），
+     那不是内容面板。判据是「这个元素本身就是内容容器」——即它的**首个类**属内容族，
+     或它带 panel* 系（.panel/.panel-card）。 */
+  const CONTENT_HEAD_RE = /^(project|timeline__card|panel|journey__|contact__card|hero__meta|hero__figures)/;
+  const glassOnContent = glassEls.filter(g => {
+    const first = g.cls.trim().split(/\s+/)[0] || '';
+    return CONTENT_HEAD_RE.test(first);
+  });
+  if(glassOnContent.length){
+    out.failures.push('内容面出现玻璃（设计上只允许控件层）: ' + glassOnContent.map(g=>g.cls.slice(0,40)).join(', '));
+  }
+
+  /* 导航材质化必须存在：控件层的玻璃若整体消失，说明材质层被误删 */
+  /* 导航的玻璃只在滚动后出现，所以「是否存在」这件事要在滚动状态下另采一次，
+     不能拿页面顶部的采集结果断言（顶部本就应当透明）。 */
+  out.info.hasChromeBar = !!document.querySelector('.chrome-bar');
+  if(!out.info.hasChromeBar) out.failures.push('缺少顶部导航 .chrome-bar');
+
   return out;
 })()`
 
@@ -424,6 +463,52 @@ try {
   console.log('body 背景:', i.bodyBg, '| 样式表:', i.sheets, '| 文档高:', i.scrollHeight)
   console.log('h1:', i.h1Count, '| main 文本:', i.mainTextLen, '字符')
   console.log('区块文本量:', JSON.stringify(i.sections))
+  console.log(
+    `玻璃材质: ${i.glassCount} 处（${(i.glassEls || []).join(' / ')}）`,
+  )
+
+  /* 导航材质化的状态切换必须可逆：顶部透明 ↔ 滚动后玻璃。
+     只验「滚动后有玻璃」不够 —— 若 data-scrolled 卡在 true，
+     导航会在页面顶部也糊一层，同样是缺陷。 */
+  const navState = async () =>
+    JSON.parse(
+      (
+        await client.send('Runtime.evaluate', {
+          returnByValue: true,
+          expression: `(()=>{const el=document.querySelector('.chrome-bar');if(!el)return 'null';
+            const cs=getComputedStyle(el);
+            return JSON.stringify({scrolled:el.dataset.scrolled||'', bf:(cs.backdropFilter||cs.webkitBackdropFilter||'none'), bg:cs.backgroundColor})})()`,
+        })
+      ).result.value || 'null',
+    )
+  await client.send('Runtime.evaluate', { expression: 'window.scrollTo(0,0)' })
+  await sleep(600)
+  const navTop = await navState()
+  await client.send('Runtime.evaluate', { expression: 'window.scrollTo(0,500)' })
+  await sleep(800)
+  const navScrolled = await navState()
+  await client.send('Runtime.evaluate', { expression: 'window.scrollTo(0,0)' })
+  await sleep(800)
+  const navBack = await navState()
+
+  const isTransparent = (s) => s.bf === 'none' || /rgba?\([^)]*,\s*0\)/.test(s.bg)
+  if (navTop.scrolled !== 'false' || !isTransparent(navTop)) {
+    out.failures.push(
+      `导航在页面顶部应透明，实际 scrolled=${navTop.scrolled} bf=${navTop.bf}`,
+    )
+  }
+  const navBlurPx = parseFloat((navScrolled.bf.match(/blur\(([\d.]+)px\)/) || [])[1] || '0')
+  if (navScrolled.scrolled !== 'true' || navBlurPx < 8) {
+    out.failures.push(
+      `导航滚动后应材质化（blur ≥ 8px），实际 scrolled=${navScrolled.scrolled} bf=${navScrolled.bf}`,
+    )
+  }
+  if (navBack.scrolled !== 'false') {
+    out.failures.push(`导航回到顶部后应取消材质化，实际 scrolled=${navBack.scrolled}`)
+  }
+  console.log(
+    `导航材质化: 顶部 bf=${navTop.bf} → 滚动后 bf=${navScrolled.bf} → 回顶 bf=${navBack.bf}`,
+  )
 
   console.log('\n文本对比度 (WCAG AA):')
   for (const c of out.checks) {
