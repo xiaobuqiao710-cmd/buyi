@@ -311,6 +311,22 @@ const PROBE_FN = `(() => {
     if(!img.hasAttribute('alt')) out.failures.push('img 缺 alt: ' + (img.getAttribute('src')||'').slice(0,60));
   });
 
+  /* 社交分享元数据：og:image / twitter:image 必须是绝对 URL。
+     踩过的坑：写 %BASE_URL%og.png 会被 Vite 替换成 /buyi/og.png（站点根相对路径），
+     微信/飞书/钉钉的抓取器不解析相对路径 → 分享出去没有图形预览。
+     这一项原先只在部署后人工看过，漏了就会静默回归，故固化进 QA。 */
+  for(const sel of ['meta[property="og:image"]','meta[name="twitter:image"]']){
+    const m = document.querySelector(sel);
+    if(!m){ out.failures.push('缺少分享预览标签: ' + sel); continue; }
+    const v = m.getAttribute('content') || '';
+    /* 用 RegExp 构造器而不是正则字面量：本文件是模板字符串，
+       字面量里的 \/ 会被模板字符串吞掉转义、把源码截断成语法错误。 */
+    if(!new RegExp('^https?://').test(v)){
+      out.failures.push('分享预览图必须是绝对 URL（' + sel + ' = ' + v + '）—— 社交抓取器不解析相对路径');
+    }
+    out.info[sel.indexOf('og:') >= 0 ? 'ogImage' : 'twitterImage'] = v;
+  }
+
   /* 语言与跳转链接 */
   out.info.lang = de.lang;
   if(!de.lang) out.failures.push('<html> 缺 lang');
