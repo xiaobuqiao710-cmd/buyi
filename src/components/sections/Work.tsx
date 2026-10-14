@@ -293,6 +293,7 @@ export function Work() {
   return (
     <Section
       id="work"
+      tall
       label="AI 项目"
       art={{
         src: 'art/work-lilies.jpg',

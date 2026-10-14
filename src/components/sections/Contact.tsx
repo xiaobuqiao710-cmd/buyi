@@ -16,8 +16,9 @@ const MAILTO = `mailto:${PROFILE.email}?subject=${encodeURIComponent(
 
 export function Contact() {
   return (
-    <section id="contact" className="section contact" aria-labelledby="contact-title">
-      <figure className="section__art">
+    <section id="contact" className="section section--art contact" aria-labelledby="contact-title">
+      {/* 画作背景板 —— 与首屏和其余区块同一套做法（见 Kit.tsx 里 Section 的说明） */}
+      <div className="section__art" aria-hidden="true">
         <img
           className="section__art-img"
           src={assetUrl('art/contact-beach.jpg')}
@@ -25,8 +26,8 @@ export function Contact() {
           loading="lazy"
           decoding="async"
         />
-        <figcaption className="section__art-credit">克劳德·莫奈《圣阿德雷斯海滩》1867 年</figcaption>
-      </figure>
+        <div className="section__veil" />
+      </div>
       <div className="container">
         <Reveal className="contact__panel">
           <PanelCard radius="xl" className="contact__card">
@@ -78,6 +79,9 @@ export function Contact() {
             </div>
           </PanelCard>
         </Reveal>
+
+        {/* 展签沉到区块底（与其余区块一致） */}
+        <p className="section__credit">克劳德·莫奈《圣阿德雷斯海滩》1867 年</p>
       </div>
     </section>
   )

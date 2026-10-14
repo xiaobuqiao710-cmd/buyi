@@ -207,39 +207,90 @@
 }
 
 /* ============================================================================
-   区块抬头画作（整站莫奈）
+   区块画作背景板（整站莫奈）
 
-   每个区块对应一幅莫奈。它不是背景装饰，而是这一节的「情绪抬头」：
-   横幅式、有展签、有画框，和首屏那幅同一待遇。
-   内容仍在下方可读的纸面上 —— 画承担情绪，纸面承担阅读。
+   与首屏同一套做法 —— 首屏是模板，这里只是把它套用到每个区块：
+   画作整块铺满 section、作为底，内容原样叠在上面；展签沉到区块底部。
+   所以区块的边界由画来划，而不是「一条横幅 + 一块纸面」两块拼起来。
+
+   与首屏的两个差异（都是有原因的）：
+   ① 首屏是 100vh 的定高舞台，可以用 96deg 的横向遮罩——左边压住文字、右边全露；
+      区块内容**满宽、左右都用**，横向遮罩会让右半边的表格/时间轴读不清。
+      故区块用「自下而上、上端收口」的竖向遮罩（同首屏窄屏那一档）。
+   ② 首屏用 fetchPriority=high，区块是滚动后才见的，用 loading=lazy 省流量。
    ========================================================================= */
-.section__art {
+.section--art {
+  /* 遮罩强度的唯一旋钮：0 = 画全露（文字必糊），1 = 画全被纸盖住。
+     调这一个值即可整体增减"画的可见度"，不必改下面的渐变色标。 */
+  --section-veil: 0.72;
+  overflow: hidden;
+  /* 展签与画要贴住区块边缘，故上下内距改由内层承担（见下方 .container 规则） */
+  padding-block: 0;
+}
+
+.section--art > .container {
   position: relative;
-  /* 上边距取消：区块自身已有 padding-top，再加一层会在画上方留出死白
-     （首版留了约 100px 空档，实测可见） */
-  margin: 0 0 clamp(2rem, 4vw, 3.5rem);
-  padding-inline: var(--gutter);
-  max-width: var(--container);
-  margin-inline: auto;
+  z-index: 1;
+  padding-block: var(--section-y);
+}
+
+/* 版面（画作层）：绝对定位铺满整个 section。
+   section 本身已是 position: relative（base.css），无需重复声明。 */
+.section__art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .section__art-img {
-  display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  /* 横幅比例 16:7：够扁不抢屏，又能看清画面主体。
-     试过 21:6 —— 桥的拱券被压成一条，像裁坏的图，已回退。 */
-  aspect-ratio: 16 / 7;
+  height: 100%;
   object-fit: cover;
-  object-position: center 46%;
-  /* 内衬白边 = 装裱（与项目截图同一语汇） */
-  padding: clamp(6px, 0.7vw, 12px);
-  background: var(--surface-panel);
-  border: 1px solid var(--divider);
-  box-shadow: var(--shadow-sm);
+  /* 焦点偏上：莫奈这几张的视觉重心都在上半部（地平线 / 睡莲带） */
+  object-position: center 42%;
+  filter: saturate(0.94) contrast(0.98);
 }
 
-.section__art-credit {
-  margin-top: var(--space-3);
+/* 长区块（work 2564px / education 2889px）：
+   cover 会把画纵向拉到区块高度，画被摊薄成一片雾。
+   改用固定附着，让画按视口尺寸呈现 —— 滚动时它像窗外的景，而不是被拉长的壁纸。
+   窄屏不用（fixed 在小屏上易出性能与抖动问题）。 */
+@media (min-width: 48rem) {
+  .section--tall .section__art-img {
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+  }
+  .section--tall .section__art {
+    /* fixed 子元素不再受 overflow 裁剪，遮罩需自己限制在区块范围内 */
+    clip-path: inset(0);
+  }
+}
+
+/* 可读区：自下而上渐厚、上端收口到纸面。
+   这不是"给画蒙一层灰" —— 它是一条从底部纸面到顶部画面的连续过渡，
+   让同一块板上既能放长表格（下半部）又不失画面（上半部）。 */
+.section__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--bg-base) 78%, transparent) 0%,
+      color-mix(in srgb, var(--bg-base) calc(var(--section-veil) * 88%), transparent) 22%,
+      color-mix(in srgb, var(--bg-base) calc(var(--section-veil) * 96%), transparent) 46%,
+      color-mix(in srgb, var(--bg-base) calc(var(--section-veil) * 99%), transparent) 100%);
+}
+
+/* 展签：贴在区块下缘（美术馆墙上的那张小卡片就在作品下沿） */
+.section__credit {
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
   text-align: right;
   font-size: var(--text-xs);
   line-height: var(--leading-ui);
@@ -247,27 +298,62 @@
   letter-spacing: var(--tracking-label);
 }
 
-/* 窄屏：横幅比例回到接近方形，否则画会被压成一条纸带 */
+/* 深色主题：画同样要压暗降饱和 —— 否则浅色文字在画的亮部读不出来
+   （首屏实测过这个问题，装订线 01–05 当时几乎不可读） */
+[data-theme='dark'] .section__art-img {
+  /* 深色底本身已暗，这里不能再压到 0.58 —— 实测与 veil 叠加后画被完全吃掉，
+     右半部只剩一片极暗的雾，看不出是莫奈。0.72 是"能认出笔触"的下限。 */
+  filter: saturate(0.78) brightness(0.72) contrast(1.02);
+}
+[data-theme='dark'] .section--art {
+  --section-veil: 0.80;
+}
+
+/* 窄屏：竖向空间紧张，遮罩再厚一档保证表格与时间轴可读 */
 @media (max-width: 48rem) {
+  .section--art {
+    --section-veil: 0.86;
+  }
   .section__art-img {
-    aspect-ratio: 3 / 2;
-    object-position: center 40%;
+    object-position: center 34%;
+  }
+  .section__credit {
+    text-align: left;
   }
 }
 
-/* 深色主题：与首屏同一处理 —— 压暗降饱和，让浅色文字与画共存 */
-[data-theme='dark'] .section__art-img {
-  filter: saturate(0.74) brightness(0.62) contrast(1.02);
-}
-
-/* 降低透明度偏好下，画的"玻璃感"无意义，纯图即可 */
+/* 降低透明度偏好：画是"半透明材质"的语汇，该偏好下直接退成不透明底 */
 @media (prefers-reduced-transparency: reduce) {
   .section__art-img {
-    background: var(--bg-elevated);
+    opacity: 0.34;
+  }
+  .section__veil {
+    background: var(--bg-base);
   }
 }
 
-/* 打印：画是屏幕语汇，纸面不需要（且大量耗墨） */
+/* 提高对比度：画是干扰源，压到最低，把对比度全部留给文字 */
+@media (prefers-contrast: more) {
+  .section__art-img {
+    opacity: 0.22;
+  }
+  .section__veil {
+    background: var(--bg-base);
+  }
+}
+
+/* 打印：画是屏幕语汇，纸上既耗墨又会让文字难以辨认 */
 @media print {
-  .section__art { display: none; }
+  .section--art {
+    padding-block: 1.5rem;
+  }
+  .section--art > .container {
+    padding-block: 0;
+  }
+  .section__art {
+    display: none;
+  }
+  .section__credit {
+    border-top-color: #000;
+  }
 }

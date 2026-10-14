@@ -46,6 +46,7 @@ export function Section({
   title,
   lead,
   art,
+  tall = false,
   children,
   className = '',
 }: {
@@ -57,19 +58,41 @@ export function Section({
   lead?: string
   /** 该区块的莫奈画作（相对 public 的路径，经 assetUrl 处理）+ 展签 */
   art?: { src: string; credit: string }
+  /** 区块是否超长（>2000px）：决定画用滚动附着还是视口固定附着 */
+  tall?: boolean
   children: ReactNode
   className?: string
 }) {
   return (
-    <section id={id} className={`section ${className}`} aria-labelledby={`${id}-title`}>
+    /* section--tall：work / education 这类超长区块（2500–2900px）用固定附着的画，
+       否则 cover 会把画纵向拉伸稀释成一片雾。见 components.css 的说明。 */
+    <section
+      id={id}
+      className={`section section--art ${tall ? 'section--tall' : ''} ${className}`}
+      aria-labelledby={`${id}-title`}
+    >
       {art ? (
-        /* 区块抬头画作：整站每个区块都对应一幅莫奈。
-           画不遮内容 —— 它是一条横幅，承担「这一节是什么情绪」，
-           下方仍回到可读的纸面。 */
-        <figure className="section__art">
-          <img className="section__art-img" src={assetUrl(art.src)} alt="" loading="lazy" decoding="async" />
-          <figcaption className="section__art-credit">{art.credit}</figcaption>
-        </figure>
+        /* 画作背景板：与首屏同一套做法（首屏是模板，这里是它的区块版）。
+
+           之前这里是「横幅」—— 一条 16:7 的画贴在区块上方，画与内容各占一块。
+           现改为整块铺满的背景层：画在同一尺度上与内容共处，区块的边界由画来划，
+           不再是一条贴上去的图。
+
+           两个必须照抄首屏的细节：
+           ① 用 <img> 而不是 CSS background —— 进不了无障碍树（alt="" + 外层 aria-hidden），
+              但保留 lazy 与固有尺寸，避免布局跳动；
+           ② 药丸式的"可读区"：遮罩必须**只在文字所在一侧**变厚、到另一侧完全透明。
+              首屏首版把遮罩压到 78%，结果画几乎看不见，等于白放一张图。 */
+        <div className="section__art" aria-hidden="true">
+          <img
+            className="section__art-img"
+            src={assetUrl(art.src)}
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="section__veil" />
+        </div>
       ) : null}
       <div className="container">
         <Reveal as="header" className="section__head">
@@ -80,6 +103,10 @@ export function Section({
           {lead ? <p className="section__lead text-secondary measure">{lead}</p> : null}
         </Reveal>
         {children}
+
+        {/* 展签沉到区块底部：它是美术馆墙上的那张小卡片，理应贴在作品下缘，
+            而不是插在抬头与正文之间打断阅读。 */}
+        {art ? <p className="section__credit">{art.credit}</p> : null}
       </div>
     </section>
   )

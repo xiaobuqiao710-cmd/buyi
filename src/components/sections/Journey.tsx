@@ -294,6 +294,7 @@ export function Journey() {
       {/* ------------------------------------------------ 教育荣誉 */}
       <Section
         id="education"
+        tall
         label="教育荣誉"
         art={{
           src: 'art/edu-hay.jpg',
