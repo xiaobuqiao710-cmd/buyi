@@ -254,19 +254,20 @@ ol {
   color: var(--text-tertiary);
 }
 
-/* 渐变文字：深色下发光的强调标题 */
+/* 强调文字：只换颜色，不做渐变。
+   原先这里是 background-clip: text 的四段渐变（黑 → 蓝 → 紫），
+   属于「用渐变顶替排版层级」的常见做法，也是 AI 生成页面的标志之一；
+   而且渐变文字在浅色主题下对比度会随渐变位置浮动，不利于无障碍。
+   中文没有斜体传统，强调用**颜色 + 字重**表达足够，也更稳。 */
 .gradient-text {
-  background: linear-gradient(
-    100deg,
-    var(--text-primary) 0%,
-    var(--text-primary) 42%,
-    var(--accent) 78%,
-    var(--accent-2) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent);
+  /* 保留类名，避免 JSX 改动蔓延；语义已从"渐变"变为"强调色" */
+}
+
+/* 真正需要区分主次时用字重，不依赖颜色 */
+.gradient-text--strong {
+  color: var(--accent);
+  font-weight: var(--weight-semibold);
 }
 
 /* 分隔线 */
