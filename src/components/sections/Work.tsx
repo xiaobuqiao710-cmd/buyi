@@ -137,14 +137,16 @@ function useExpandSpring(open: boolean) {
  * 降低动态时，work.css 会把行高解算强制到终值（见 @media prefers-reduced-motion），
  * 所以这里的进度值只负责"过渡"，不负责"最终可见性"。
  */
-function ProjectMore({ project, id, dense }: { project: Project; id: string; dense: boolean }) {
+function ProjectMore({ project, id }: { project: Project; id: string }) {
   return (
-    <div className="project__expand" id={id} data-dense={dense}>
+    <div className="project__expand" id={id}>
       <div className="project__expand-inner">
         <div className="project__expand-grid">
           <div className="project__block">
             <h4 className="project__block-title">背景与问题</h4>
-            <p className="project__background measure">{project.background}</p>
+            {/* 不套 .measure —— 展开区双栏本身已是窄栏（约 30 字/行），
+                再套 54ch 会让左栏比右栏短一截，两栏右边缘对不齐。 */}
+            <p className="project__background">{project.background}</p>
           </div>
 
           <div className="project__block">
@@ -260,7 +262,7 @@ function ProjectCard({ project, lead = false }: { project: Project; lead?: boole
         {/* 展开区移出 .project__body，让它横跨整张卡片 ——
             留在 body 里的话只拿到 62% 宽度，双栏各约 285px，
             中文正文会碎成 19 字/行。 */}
-        <ProjectMore project={project} id={detailId} dense={!lead} />
+        <ProjectMore project={project} id={detailId} />
       </div>
     </PanelCard>
   )
