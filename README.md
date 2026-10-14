@@ -24,9 +24,40 @@
 
 ---
 
-## 设计原则
+## 设计语言：纸本档案
 
-按 Apple 的人机界面规范实现，重点不是"看起来像"，而是几条可验证的规则：
+整页只有一种隐喻：**一份有编号的档案**。首屏右侧一条装订线（01–05）是它的脊柱；
+往下每个区块都由细线分隔的条目构成，而不是一张张浮动的卡片。
+
+关键判断（都有具体依据，不是审美偏好）：
+
+- **液态玻璃只用在控件层。** 抓取 apple.com.cn 的真实首屏可以看到，
+  Apple 的玻璃只出现在按钮与工具条上，从不作为装饰铺在内容面上。
+  把每段内容装进浮空玻璃会造出多个与正文无关的视觉重心，也压低了文字可读性。
+  因此内容面用 `.panel`（纸面 + 一道细边），`.glass` 只留给导航与抽屉。
+- **不用紫蓝弥散光斑。** 原实现的背景是 28px 模糊的蓝紫径向光（`--aura-1/2/3`），
+  这正是「AI 与开发者工具」类页面的通用样貌，且对内容零贡献。
+  底层肌理改为一道约 4% 不透明度的网格 —— 语汇是档案纸，不是发光。
+- **不用渐变文字。** 强调用单色 + 字重；渐变会让对比度随位置浮动，不利于无障碍复核。
+- **项目标记是记号，不是主视觉。** 每卡顶部原有一块 16:7 的渐变面板，
+  占卡片约四成面积却零信息量；现改为小尺寸单色描边记号（大卡 5.5rem）。
+- **条目，不是盒子。** 项目、经历、教育、技能四处原本都是圆角卡片。
+  底色变浅之后，白卡压在近白页面上会退化成一整块"什么都不做的平板"——
+  内容浮在里面，卡片只贡献了一条边框。现改为**上下细线分隔的条目**，
+  与首屏装订线共用同一套语汇；同时取消整块 hover 上浮，
+  因为条目不该暗示"我是一张会浮起来的卡片"。
+
+### 中文排版的三条硬约束
+
+这三条是用 `scripts/qa-typography.mjs` 量出来的，不是估的：
+
+| 约束 | 原因 | 取值 |
+| --- | --- | --- |
+| 行宽 | `ch` 是数字 `0` 的宽度，**一个汉字约占 1.58ch**，照拉丁文习惯写的 `68ch` 在中文里等于 43 字/行 | `--measure: 54ch`（≈34 字/行） |
+| 行高 | 汉字字面率大、笔画密，拉丁文海报式的 `1.02` 会上下相撞 | 展示字 `--leading-display: 1.14`，正文 `--leading-body: 1.72` |
+| 正文字号 | 承担连续阅读职责的文字不小于 15px；12–14px 只用于标签与控制 | `--text-base-sm: 0.9375rem` |
+
+### Apple 动效规则（可验证的部分）
 
 | 规则 | 落地位置 |
 | --- | --- |
@@ -36,14 +67,14 @@
 | 速度交接 | `VelocityTracker` 保留最近 100 ms 样本，手势结束时把速度交给弹簧 |
 | 动量投影 | `project(v)` 用 `d ≈ 0.998` 预测滑动终点，而不是"滑多远算多远" |
 | 边界回弹 | `rubberband()` 阻尼公式，越界越难拉 |
-| 材质与深度 | 模糊分级 `--blur-chip/card/chrome/hero`，大面更厚；材料出现时 blur 与 scale 同动 |
+| 材质与深度 | 模糊分级 `--blur-chip/card/chrome/hero`；材料出现时 blur 与 scale 同动 |
 
 ### 无障碍三项降级
 
 三条系统偏好都在 CSS 层切断，不靠 JS 判断：
 
 - `prefers-reduced-motion` → 时长压缩到瞬时，`--motion-scale: 0` 令所有位移归零
-- `prefers-reduced-transparency` → 玻璃转实心，所有 `backdrop-filter` 归零
+- `prefers-reduced-transparency` → 面板转实底、边框加重，所有 `backdrop-filter` 归零
 - `prefers-contrast: more` → 近实底 + 加重文字 + 强调描边
 
 另有 `@supports not (backdrop-filter: ...)` 兜底，老浏览器得到不透明卡片而不是糊掉的半透明块。
@@ -141,11 +172,11 @@ src/
   styles/
     tokens.css           设计令牌唯一真源 + 三项无障碍降级
     base.css             重置、光斑背景、颗粒层、排版
-    glass.css            玻璃材质构造与厚度分级
+    glass.css            控件层玻璃 + 内容面板 .panel
     components.css       按钮、区块头、指标行等共享件
     {chrome,hero,work,journey,contact}.css
   components/
-    ui/Kit.tsx           共享原语（Section/Button/GlassCard/MetricRow…）
+    ui/Kit.tsx           共享原语（Section/Button/PanelCard/GlassCard/MetricRow…）
     layout/Chrome.tsx    导航 + 页脚 + 移动端抽屉
     sections/            Hero / Work / Journey / Contact
 ```
