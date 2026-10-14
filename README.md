@@ -192,3 +192,20 @@ src/
 
 截图放在 `public/shots/`，同样经 `assetUrl()` 拼接以适配子路径部署。
 素材来自项目真实运行界面，按显示尺寸导出为 JPEG（单张 ≤ 170KB）。
+
+### QA 的前置约束：构建产物的 base 必须与被测 URL 配对
+
+`vite build` 的 `base` 来自 `BASE_PATH`，所以 **dist 是分两种的**：
+
+| 构建命令 | dist 里的资源前缀 | 必须用哪种服务器打开 |
+| --- | --- | --- |
+| `npm run build` | `/assets/…` | 根路径，如 `http://localhost:4180/` |
+| `BASE_PATH=/buyi/ npm run build` | `/buyi/assets/…` | 挂在 `/buyi/` 下的服务器 |
+
+**两者不能混用。** 把 `/buyi/` 产物用根路径服务器打开，所有 JS/CSS 一律 404、
+页面一片空白 —— 而 QA 脚本会把这误报成「缺少 `<main>`」「主内容文本过少」，
+让人去查根本不存在的组件问题（这个坑实际踩过一次）。
+
+因此 `qa-render.mjs` 与 `qa-typography.mjs` 都会先读 `dist/index.html` 里资源的
+实际前缀，与被测 URL 的路径比对；不一致就直接退出（退出码 2）并打印该敲的命令，
+而不是产出一堆误导性的失败项。

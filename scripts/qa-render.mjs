@@ -18,15 +18,65 @@
  * 退出码：0 通过；1 有失败项；2 环境缺失。
  */
 import { spawn, execFileSync } from 'node:child_process'
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+/* ---------------------------------------------------------------------------
+   构建产物 base 自检 —— 这是本项目踩过的一个真实陷阱，做成硬性前置检查。
+
+   `vite build` 的 base 来自 BASE_PATH 环境变量：
+     · 不带 BASE_PATH  → dist/index.html 引用 /assets/...
+     · BASE_PATH=/buyi/ → dist/index.html 引用 /buyi/assets/...
+
+   两种产物不能混用：把带 /buyi/ 前缀的 dist 用根路径服务器打开，
+   所有 JS/CSS 一律 404，页面一片空白 —— 而脚本会把这误报成
+   「缺少 <main>」「主内容文本过少」，让人去查根本不存在的组件问题。
+
+   所以这里先读 dist/index.html 里资源的实际前缀，再和被测 URL 的路径比对，
+   不一致就直接退出并给出该敲的命令，而不是产出一堆误导性的失败项。
+   --------------------------------------------------------------------------- */
+function assertBuildBaseMatches(target) {
+  const root = fileURLToPath(new URL('..', import.meta.url))
+  const indexPath = join(root, 'dist', 'index.html')
+  if (!existsSync(indexPath)) {
+    console.error('✗ 找不到 dist/index.html —— 先跑 `npm run build`（或 `BASE_PATH=… npm run build`）')
+    process.exit(2)
+  }
+  const html = readFileSync(indexPath, 'utf8')
+  const m = html.match(/src="([^"]*?)\/assets\/index-[^"]+\.js"/)
+  if (!m) {
+    console.error('✗ 无法从 dist/index.html 解析资源前缀，构建产物可能损坏')
+    process.exit(2)
+  }
+  const buildPrefix = m[1] // '' 或 '/buyi'
+  const url = new URL(target)
+  const urlPrefix = url.pathname.replace(/\/[^/]*$/, '').replace(/\/$/, '')
+  if (urlPrefix !== buildPrefix) {
+    console.error('✗ 构建产物的 base 与被测 URL 不匹配 —— 这会让页面全白并产出误导性失败项。')
+    console.error(`    构建产物资源前缀: '${buildPrefix}'（dist/index.html 里是 '${buildPrefix}/assets/…'）`)
+    console.error(`    被测 URL 路径前缀: '${urlPrefix}'（${target}）`)
+    console.error('  修法二选一：')
+    if (buildPrefix === '') {
+      console.error(`    · 用根路径服务器打开：node scripts/qa-render.mjs http://localhost:4180/`)
+      console.error(`    · 或重新构建到该前缀：BASE_PATH=${urlPrefix}/ npm run build`)
+    } else {
+      console.error(`    · 重新构建成根路径产物：npm run build`)
+      console.error(`    · 或用挂在 '${buildPrefix}/' 下的服务器打开页面`)
+    }
+    process.exit(2)
+  }
+}
 
 const argv = process.argv.slice(2)
 const URL_TO_TEST = argv.find((a) => a.startsWith('http')) ?? 'http://localhost:4180/'
 const THEME = argv.find((a) => a.startsWith('--theme='))?.split('=')[1]
 const WANT_SHOTS = argv.includes('--shots')
 const PORT = 9455 + Math.floor(Math.random() * 400)
+
+/* 先校验构建产物的 base 与被测 URL 一致，避免产出误导性的"页面没渲染"结论 */
+assertBuildBaseMatches(URL_TO_TEST)
 
 const CHROME_CANDIDATES = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',

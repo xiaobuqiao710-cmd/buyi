@@ -19,6 +19,32 @@
 const url = process.argv[2] || 'http://localhost:4180/'
 const CDP_PORT = Number(process.env.QA_CDP_PORT || 9891)
 
+/* ---------------------------------------------------------------------------
+   构建产物 base 自检（与 qa-render.mjs 同一道防线）
+   BASE_PATH 决定 dist 里资源前缀；把 /buyi/ 产物用根路径打开会让页面全白，
+   于是所有选择器都测不到元素，报出一堆"元素缺失"的假失败。先拦下来。
+   --------------------------------------------------------------------------- */
+const distRoot = fileURLToPath(new URL('..', import.meta.url))
+const distIndex = join(distRoot, 'dist', 'index.html')
+if (!existsSync(distIndex)) {
+  console.error('✗ 找不到 dist/index.html —— 先跑 `npm run build`')
+  process.exit(2)
+}
+const distHtml = readFileSync(distIndex, 'utf8')
+const baseMatch = distHtml.match(/src="([^"]*?)\/assets\/index-[^"]+\.js"/)
+if (baseMatch) {
+  const buildPrefix = baseMatch[1]
+  const urlPrefix = new URL(url).pathname.replace(/\/[^/]*$/, '').replace(/\/$/, '')
+  if (urlPrefix !== buildPrefix) {
+    console.error('✗ 构建产物的 base 与被测 URL 不匹配 —— 页面会全白，测试结果无意义。')
+    console.error(`    构建产物前缀 '${buildPrefix}' vs 被测 URL 前缀 '${urlPrefix}'`)
+    console.error(buildPrefix === ''
+      ? '  修法：用根路径服务器，或 BASE_PATH=' + urlPrefix + '/ npm run build'
+      : '  修法：npm run build 重建为根路径产物，或用挂在 ' + buildPrefix + '/ 下的服务器')
+    process.exit(2)
+  }
+}
+
 const CHROME_CANDIDATES = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/Applications/Chromium.app/Contents/MacOS/Chromium',
@@ -41,6 +67,9 @@ const TARGETS = [
 const MIN_BODY_LINE_HEIGHT = 1.55
 const MAX_BODY_LINE_HEIGHT = 1.95
 
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { spawn } from 'node:child_process'
 import { existsSync, writeFileSync } from 'node:fs'
 
