@@ -194,6 +194,12 @@ export const PROJECTS: Project[] = [
       { value: '0', label: '人工点击' },
     ],
     tech: ['Node.js ESM', 'launchd', 'Web 抓取与解析', '邮件桥', '数据归一化'],
+    shot: {
+      src: 'shots/job-pipeline.jpg',
+      caption:
+        '主档案的结构与逐期产出：七个板块、写进代码的准入口径、30 期日报与五个链路节点。' +
+        '这份档案自 9 月 8 日起每天被定时链路更新，331 KB、1030 行，可逐期回溯。',
+    },
     featured: 3,
   },
   {
