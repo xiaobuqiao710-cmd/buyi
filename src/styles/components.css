@@ -209,3 +209,69 @@
 .grid--3 {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
+
+/* ============================================================================
+   区块抬头画作（整站莫奈）
+
+   每个区块对应一幅莫奈。它不是背景装饰，而是这一节的「情绪抬头」：
+   横幅式、有展签、有画框，和首屏那幅同一待遇。
+   内容仍在下方可读的纸面上 —— 画承担情绪，纸面承担阅读。
+   ========================================================================= */
+.section__art {
+  position: relative;
+  /* 上边距取消：区块自身已有 padding-top，再加一层会在画上方留出死白
+     （首版留了约 100px 空档，实测可见） */
+  margin: 0 0 clamp(2rem, 4vw, 3.5rem);
+  padding-inline: var(--gutter);
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+.section__art-img {
+  display: block;
+  width: 100%;
+  /* 横幅比例 16:7：够扁不抢屏，又能看清画面主体。
+     试过 21:6 —— 桥的拱券被压成一条，像裁坏的图，已回退。 */
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  object-position: center 46%;
+  /* 内衬白边 = 装裱（与项目截图同一语汇） */
+  padding: clamp(6px, 0.7vw, 12px);
+  background: var(--surface-panel);
+  border: 1px solid var(--divider);
+  box-shadow: var(--shadow-sm);
+}
+
+.section__art-credit {
+  margin-top: var(--space-3);
+  text-align: right;
+  font-size: var(--text-xs);
+  line-height: var(--leading-ui);
+  color: var(--text-tertiary);
+  letter-spacing: var(--tracking-label);
+}
+
+/* 窄屏：横幅比例回到接近方形，否则画会被压成一条纸带 */
+@media (max-width: 48rem) {
+  .section__art-img {
+    aspect-ratio: 3 / 2;
+    object-position: center 40%;
+  }
+}
+
+/* 深色主题：与首屏同一处理 —— 压暗降饱和，让浅色文字与画共存 */
+[data-theme='dark'] .section__art-img {
+  filter: saturate(0.74) brightness(0.62) contrast(1.02);
+}
+
+/* 降低透明度偏好下，画的"玻璃感"无意义，纯图即可 */
+@media (prefers-reduced-transparency: reduce) {
+  .section__art-img {
+    background: var(--bg-elevated);
+  }
+}
+
+/* 打印：画是屏幕语汇，纸面不需要（且大量耗墨） */
+@media print {
+  .section__art { display: none; }
+}

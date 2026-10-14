@@ -650,3 +650,23 @@
 [data-theme='dark'] .hero__spine-line {
   background: color-mix(in srgb, var(--divider-strong) 78%, transparent);
 }
+
+/* ---- 换画后的适配：从"灰雾"换成"明亮的蓝天碧海" ----
+   问题：新画整体比原画亮得多（大片天蓝 + 白云），原来为灰雾调好的遮罩不够了 ——
+   实测导航与首屏右侧的浅色文字开始和天空打架。
+   做法：把文字侧的雾加深一档，同时在右上角补一层同色系的薄云，
+   让导航落在"云"上而不是直接压在天上。 */
+.hero__art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  /* 左上给文字，右上给导航 —— 两个角落各自加深一点 */
+  background:
+    radial-gradient(60% 46% at 88% 4%,
+      color-mix(in srgb, var(--bg-base) 34%, transparent), transparent 72%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--bg-base) 22%, transparent) 0%,
+      transparent 26%);
+}

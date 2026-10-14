@@ -3,7 +3,9 @@
  *
  * 设计意图：
  *   首屏用 M1 的语汇 —— **一幅画铺满整屏，内容叠在画上**。
- *   莫奈《吉维尼附近的塞纳河支流（雾）》（1897）本身几乎没有硬边，
+ *   莫奈《普尔维尔的悬崖漫步》（1882）：蓝天白云 + 碧绿海面 + 粉紫野花坡地，
+ *   是全批里最明亮开阔的一张；右侧地平线与人物天然形成视觉落点，
+ *   左侧天空云层平缓，压得住文字。
  *   雾紫到灰蓝是连续过渡，左侧一片深色树影天然就是能压住文字的底，
  *   所以不需要额外加黑遮罩去救，只需一层**同色系的雾**收窄可读区。
  *   往下各区块用 M3 的语汇 —— 内容像被展出的作品（装裱 + 展签式说明）。
@@ -139,7 +141,7 @@ export function Hero() {
         <div ref={gridRef} className="hero__art">
           <img
             className="hero__art-img hero__art-img--wide"
-            src={assetUrl('art/hero-mist.jpg')}
+            src={assetUrl('art/hero-cliff.jpg')}
             alt=""
             width={2000}
             height={1941}
@@ -148,7 +150,7 @@ export function Hero() {
           />
           <img
             className="hero__art-img hero__art-img--narrow"
-            src={assetUrl('art/hero-mist-mobile.jpg')}
+            src={assetUrl('art/hero-cliff-mobile.jpg')}
             alt=""
             width={1400}
             height={1358}
@@ -266,7 +268,7 @@ export function Hero() {
           它同时解决了一个真实问题 —— 首屏右下角原先是一大片死白。
           用的是美术馆展签的写法：作品名 + 作者 + 年份，字号小于正文、颜色更淡。 */}
       <p className="container hero__credit">
-        克劳德·莫奈《吉维尼附近的塞纳河支流（雾）》，1897 年
+        克劳德·莫奈《普尔维尔的悬崖漫步》，1882 年
       </p>
 
       {/* 克制的向下滚动提示：Hero 与下一区块之间 */}

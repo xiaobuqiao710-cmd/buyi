@@ -292,6 +292,10 @@ export function Work() {
     <Section
       id="work"
       label="AI 项目"
+      art={{
+        src: 'art/work-lilies.jpg',
+        credit: '克劳德·莫奈《睡莲》1906 年',
+      }}
       title="法律人的 AI 工程实践"
       lead="五个项目全部独立完成并已上线。它们在说同一件事：把一条真实的工作流拆开、重建成可复用、可校验、可自动化运行的系统。"
       className="work"

@@ -6,6 +6,7 @@
  * 任何区块组件都应该复用这里的原语，不要各自造按钮和卡片。
  */
 import type { ReactNode, ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react'
+import { assetUrl } from '../../data/content'
 import { useReveal } from '../../lib/useReveal'
 import { usePointerGlow } from '../../lib/usePointerGlow'
 
@@ -44,6 +45,7 @@ export function Section({
   label,
   title,
   lead,
+  art,
   children,
   className = '',
 }: {
@@ -53,11 +55,22 @@ export function Section({
   title: string
   /** 导语，一到两句 */
   lead?: string
+  /** 该区块的莫奈画作（相对 public 的路径，经 assetUrl 处理）+ 展签 */
+  art?: { src: string; credit: string }
   children: ReactNode
   className?: string
 }) {
   return (
     <section id={id} className={`section ${className}`} aria-labelledby={`${id}-title`}>
+      {art ? (
+        /* 区块抬头画作：整站每个区块都对应一幅莫奈。
+           画不遮内容 —— 它是一条横幅，承担「这一节是什么情绪」，
+           下方仍回到可读的纸面。 */
+        <figure className="section__art">
+          <img className="section__art-img" src={assetUrl(art.src)} alt="" loading="lazy" decoding="async" />
+          <figcaption className="section__art-credit">{art.credit}</figcaption>
+        </figure>
+      ) : null}
       <div className="container">
         <Reveal as="header" className="section__head">
           <p className="label">{label}</p>

@@ -7,7 +7,7 @@
  *
  * 注意：公开页只在 PROFILE.email —— 不放电话号码（用户明确要求）。
  */
-import { PROFILE } from '../../data/content'
+import { PROFILE, assetUrl } from '../../data/content'
 import { Reveal, LinkButton, PanelCard } from '../ui/Kit'
 
 const MAILTO = `mailto:${PROFILE.email}?subject=${encodeURIComponent(
@@ -17,6 +17,16 @@ const MAILTO = `mailto:${PROFILE.email}?subject=${encodeURIComponent(
 export function Contact() {
   return (
     <section id="contact" className="section contact" aria-labelledby="contact-title">
+      <figure className="section__art">
+        <img
+          className="section__art-img"
+          src={assetUrl('art/contact-beach.jpg')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption className="section__art-credit">克劳德·莫奈《圣阿德雷斯海滩》1867 年</figcaption>
+      </figure>
       <div className="container">
         <Reveal className="contact__panel">
           <PanelCard radius="xl" className="contact__card">

@@ -260,6 +260,10 @@ export function Journey() {
       <Section
         id="experience"
         label="法律经历"
+        art={{
+          src: 'art/exp-etretat.jpg',
+          credit: '克劳德·莫奈《埃特勒塔海滩与悬崖》1885 年',
+        }}
         title="在红圈与精品所，把检索和文书做成可复核的产出"
         lead="两段实习覆盖商事争议解决与非诉 IPO：一端是监管规则与案例的穷尽检索，另一端是尽调、问询与申报材料的全流程执行。"
       >
@@ -291,6 +295,10 @@ export function Journey() {
       <Section
         id="education"
         label="教育荣誉"
+        art={{
+          src: 'art/edu-hay.jpg',
+          credit: '克劳德·莫奈《干草堆（夏末）》1891 年',
+        }}
         title="从法学学士到法律硕士，名次与奖学金是同一件事的证据"
         lead="本科与硕士都在北京大学法学院，两段学业的名次口径一致，可横向比较。"
       >
