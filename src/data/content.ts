@@ -36,8 +36,13 @@ export interface Project {
   link?: { href: string; label: string }
   /** 卡片主色（用 CSS 变量名，不写死色值） */
   accentVar?: string
-  /** 配图路径（相对 public），没有则渲染抽象示意图 */
-  image?: string
+  /**
+   * 真实界面截图的文件名（放在 public/shots/，经 assetUrl 拼接）。
+   * 只在展开详情里作为「界面证据」展示 —— 有真实截图就比抽象图形有说服力得多，
+   * 但没有的项目不补画，宁可不放（假图比没有更糟）。
+   * 同时给一段说明，讲清这张图证明了什么。
+   */
+  shot?: { src: string; caption: string }
 }
 
 export interface Experience {
@@ -150,6 +155,11 @@ export const PROJECTS: Project[] = [
       { value: 'PWA', label: '断网可用' },
     ],
     tech: ['Vite 5', 'React 18', 'TypeScript', 'Supabase (Auth + RLS)', 'Vercel', 'Vite PWA'],
+    shot: {
+      src: 'shots/bank-lv3.jpg',
+      caption:
+        '题库三级结构（分类 → 题库 → 题组）：一屏内可完成整场导入、题目级增删改与「AI 整理这一场」。',
+    },
     featured: 2,
     link: { href: 'https://resumeself.vercel.app', label: '访问站点' },
   },

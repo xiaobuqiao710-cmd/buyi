@@ -641,3 +641,46 @@
 .project.panel-glow::after {
   display: none;
 }
+
+/* ============================================================================
+   真实界面截图 —— 展开区里的「证据位」
+
+   卡面那枚单色记号回答的是「这是哪个项目」，这张图回答的是「它真的在跑」。
+   两者职责不同：记号是识别，截图是证据。所以截图只在展开后出现，
+   且只有确有真实截图的项目才有 —— 没有的项目不补画，假图比没有更糟。
+   ========================================================================= */
+
+.project__shot {
+  margin: var(--space-6) 0 0;
+  /* 截图是"贴进档案的附件"：左侧一道细线把它与正文区分开，而不是再套一层卡片 */
+  padding-left: var(--space-5);
+  border-left: 2px solid var(--divider-strong);
+}
+
+.project__shot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  /* 截图自带深色背景，给它一道细边，避免与页面暗色背景糊在一起 */
+  border: 1px solid var(--divider-strong);
+  background: var(--surface-panel);
+}
+
+.project__shot-caption {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  line-height: var(--leading-ui);
+  color: var(--text-tertiary);
+  max-width: var(--measure);
+}
+
+/* 窄屏：左边线会挤掉本来就紧的横向空间，改为上方细线 */
+@media (max-width: 40rem) {
+  .project__shot {
+    padding-left: 0;
+    padding-top: var(--space-5);
+    border-left: none;
+    border-top: 1px solid var(--divider-strong);
+  }
+}

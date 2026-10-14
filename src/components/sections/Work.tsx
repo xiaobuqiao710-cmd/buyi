@@ -25,7 +25,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Chip, MetricRow, PanelCard, Reveal, Section } from '../ui/Kit'
-import { PROJECTS } from '../../data/content'
+import { assetUrl, PROJECTS } from '../../data/content'
 import type { Project } from '../../data/content'
 import { SPRING, springValue } from '../../lib/spring'
 import type { SpringControls } from '../../lib/spring'
@@ -156,6 +156,23 @@ function ProjectMore({ project, id, dense }: { project: Project; id: string; den
             </ul>
           </div>
         </div>
+
+        {/* 真实界面截图：只在确有截图的项目出现。
+            抽象记号负责"一眼区分项目"，真实截图负责"证明它真的在跑"——
+            两者职责不同，所以截图放在展开区而不是卡面。
+            刻意放在 grid 之外：紧凑卡在 2 列布局里那一列只有 ~510px 宽，
+            放进 grid 再跨列也跨不出列宽；放在这里它才占满整个条目宽度。 */}
+        {project.shot ? (
+          <figure className="project__shot">
+            <img
+              className="project__shot-img"
+              src={assetUrl(project.shot.src)}
+              alt={project.shot.caption}
+              decoding="async"
+            />
+            <figcaption className="project__shot-caption">{project.shot.caption}</figcaption>
+          </figure>
+        ) : null}
       </div>
     </div>
   )
