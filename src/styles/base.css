@@ -266,19 +266,6 @@ ol {
   /* 保留类名，避免 JSX 改动蔓延；语义已从"渐变"变为"强调色" */
 }
 
-/* 真正需要区分主次时用字重，不依赖颜色 */
-.gradient-text--strong {
-  color: var(--accent);
-  font-weight: var(--weight-semibold);
-}
-
-/* 分隔线 */
-.divider {
-  height: 1px;
-  background: var(--divider);
-  border: 0;
-}
-
 /* 滚动条（Chromium / WebKit） */
 ::-webkit-scrollbar {
   width: 10px;

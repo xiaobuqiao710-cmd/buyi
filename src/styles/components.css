@@ -202,10 +202,6 @@
   gap: var(--space-5);
 }
 
-.grid--2 {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-}
-
 .grid--3 {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
 }
