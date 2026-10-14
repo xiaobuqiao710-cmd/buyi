@@ -419,3 +419,53 @@
     transform: none;
   }
 }
+
+/* ============================================================================
+   方向 A 统一：经历条目与项目条目用同一套语汇
+
+   原先这里每段经历是一张圆角白卡，而项目区已经改成"上下细线分隔的条目"，
+   同一页出现两种分组语言。现在统一为条目：
+     · 去掉圆角与四周描边，改用上下细分隔线
+     · 保留左侧时间轴的轴线与节点（它是这一区独有的、有信息含义的结构）
+     · 条目之间不再靠底色区分，纵向间距收紧
+   ========================================================================= */
+
+.timeline__card {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--divider);
+  border-radius: 0;
+  /* 不要在这里加左内边距 —— 轴线的 gutter 由 .timeline 的 padding-left 承担，
+     而轴线本身定位在 <li> 的 -(gutter) 处、圆点定位在卡片的 -(gutter) 处。
+     若给卡片再加一层左内边距，圆点会跟着右移而轴线不动，两者立刻错位
+     （实测圆点跑到 -36.8px，脱离轴线）。 */
+  padding: var(--space-6) 0;
+}
+
+/* 每条经历的首尾都有界：最后一条补下边线 */
+.timeline__item:last-child .timeline__card {
+  border-bottom: 1px solid var(--divider);
+}
+
+/* 技能三列不要做成三张小卡（那正是「卡片套卡片」）；
+   改成三栏文字 + 一道上边线，与「一组数字」同一处理 */
+.journey__skill-col {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--divider);
+  border-radius: 0;
+  padding: var(--space-5) 0 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* 指标卡同理：它承载的是"汇总数字"，用细线分隔即可 */
+.journey__metrics-card {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--divider);
+  border-radius: 0;
+  padding: var(--space-5) 0 0;
+}
