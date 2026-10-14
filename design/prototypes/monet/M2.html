@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>M2 · 色板</title>
+<style>
+/* ============================================================================
+   M2「色板」—— 不用画，只用莫奈的色
+
+   取材：25 张画作量化抽色后的统计结论 ——
+     冷色 13 张 / 暖色 9 张 / 中 3 张；主色饱和度普遍只有 s3–s20。
+     所以这套色板刻意做得极低饱和：高级感来自「低饱和 + 明确的明度阶梯」，
+     而不是来自鲜艳。
+   色相骨架取三张：雾紫(#16 251°) / 灰蓝(#22 204°) / 暖灰(#13 52°)。
+   全页零图片，纯排版与色，加载最快、最稳、最像"设计过"。
+   ========================================================================= */
+:root{
+  /* 纸面：不是纯白，是带一点雾蓝的纸 */
+  --paper:#f4f3f7;
+  --paper-2:#ffffff;
+  --paper-3:#e9e8ef;
+
+  /* 墨色阶梯：用同一条紫灰轴，保证整页色相统一 */
+  --ink:#191823;
+  --ink-2:#403d4e;
+  --ink-3:#6b6880;
+  --ink-4:#9a97a8;
+
+  /* 莫奈三色：雾紫 / 灰蓝 / 暖沙 */
+  --mist:#7d7a94;
+  --mist-soft:#e3e1ec;
+  --water:#5f7482;
+  --water-soft:#dde5e8;
+  --sand:#a8988a;
+  --sand-soft:#ece5dd;
+
+  --line:rgba(25,24,35,.13);
+  --line-2:rgba(25,24,35,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,"SF Pro SC","PingFang SC",sans-serif;
+  color:var(--ink);background:var(--paper);
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+  display:flex;flex-direction:column;
+}
+
+.bar{display:flex;align-items:center;justify-content:space-between;
+  padding:22px clamp(24px,5vw,72px);border-bottom:1px solid var(--line-2)}
+.brand{font-size:15px;font-weight:600}
+.brand span{color:var(--ink-3);font-weight:400;margin-left:10px;font-size:13px}
+.nav{display:flex;gap:26px;font-size:14px}
+.nav a{color:var(--ink-2);text-decoration:none}
+.nav a:hover{color:var(--ink)}
+
+.wrap{flex:1;display:flex;align-items:center;padding:0 clamp(24px,5vw,72px)}
+.inner{max-width:660px}
+
+.eyebrow{font-size:13px;color:var(--ink-3);letter-spacing:.04em;margin-bottom:22px}
+
+h1{font-size:clamp(52px,7.4vw,104px);line-height:1.04;letter-spacing:-.035em;
+  font-weight:700;margin-bottom:24px;
+  /* 极轻微的双色：不要渐变文字，只在收笔处带一点水色 */
+  color:var(--ink)}
+
+.claim{font-size:clamp(19px,2.1vw,25px);line-height:1.46;color:var(--ink-2);
+  font-weight:500;margin-bottom:20px}
+/* 中文强调：一行下方一道莫奈水色的短横，替代英文斜体 */
+.claim b{font-weight:600;color:var(--water);
+  box-shadow:inset 0 -.5em 0 var(--water-soft)}
+
+.body{font-size:17px;line-height:1.78;color:var(--ink-2);margin-bottom:36px;max-width:34em}
+
+.cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 24px;border-radius:999px;
+  font-size:15px;font-weight:500;text-decoration:none;border:1px solid transparent;
+  transition:transform .16s cubic-bezier(.22,.61,.36,1)}
+.btn:active{transform:scale(.97)}
+.btn--solid{background:var(--ink);color:#fff}
+.btn--outline{color:var(--ink);border-color:var(--line);background:var(--paper-2)}
+.btn--quiet{color:var(--ink-2);padding-left:6px}
+
+/* 底部：三条细线 + 三个数字，线的颜色分别取自莫奈三色 —— 这是全页唯一的装饰 */
+.figures{border-top:1px solid var(--line);margin:0 clamp(24px,5vw,72px);
+  padding:30px 0 42px;display:flex;gap:clamp(34px,6vw,86px)}
+.fig{position:relative;padding-top:16px}
+.fig::before{content:'';position:absolute;top:0;left:0;width:34px;height:2px}
+.fig--a::before{background:var(--mist)}
+.fig--b::before{background:var(--water)}
+.fig--c::before{background:var(--sand)}
+.fig b{display:block;font-size:clamp(30px,3.4vw,42px);line-height:1;font-weight:650;letter-spacing:-.02em}
+.fig span{display:block;margin-top:9px;font-size:13px;color:var(--ink-3)}
+.fig-note{margin-left:auto;font-size:13px;color:var(--ink-3);max-width:26em;line-height:1.6;text-align:right;align-self:flex-end}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="brand">宋建豪<span>法律 × AI</span></div>
+    <nav class="nav"><a href="#work">AI 项目</a><a href="#experience">法律经历</a><a href="#education">教育荣誉</a><a href="#contact">联系</a></nav>
+  </div>
+
+  <div class="wrap">
+    <div class="inner">
+      <p class="eyebrow">北京 · 法律硕士 · 法律职业资格 A 类</p>
+      <h1>宋建豪</h1>
+      <p class="claim">在红圈与精品所的证券、IPO 项目里做检索与文书；<br>同时把这条工作流拆开、<b>重建成可复用的 AI Agent 系统</b>。</p>
+      <p class="body">北京大学法律硕士（金融法）。五个 AI 项目全部独立完成并已上线，它们在做同一件事：把一条真实的工作流拆开、重建成可复用、可校验、可自动化运行的系统。</p>
+      <div class="cta">
+        <a class="btn btn--solid" href="#">↓ 下载简历</a>
+        <a class="btn btn--outline" href="#work">查看 AI 项目</a>
+        <a class="btn btn--quiet" href="#contact">邮件联系 →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="figures">
+    <div class="fig fig--a"><b>5</b><span>个 AI 项目</span></div>
+    <div class="fig fig--b"><b>4</b><span>个专职 Agent</span></div>
+    <div class="fig fig--c"><b>5</b><span>条自动化链路</span></div>
+    <p class="fig-note">全部来自本人独立完成并已上线的项目，数字可回溯到项目详情。</p>
+  </div>
+</body>
+</html>

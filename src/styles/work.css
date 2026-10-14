@@ -650,35 +650,58 @@
    且只有确有真实截图的项目才有 —— 没有的项目不补画，假图比没有更糟。
    ========================================================================= */
 
+/* 展陈语汇（莫奈 M3）：截图是**被展出的作品**，不是贴进档案的附件。
+
+   与首屏同一套逻辑 —— 首屏那幅莫奈有装裱白边与展签，项目截图也如此：
+   画框底色 + 内衬留白 + 阴影，下方一条短横线接展签式说明。
+   换成这个语汇之前，截图只是"左边一道竖线的附件"，
+   与首屏的画作待遇不一致，整页少了那层呼应。 */
 .project__shot {
   margin: var(--space-6) 0 0;
-  /* 截图是"贴进档案的附件"：左侧一道细线把它与正文区分开，而不是再套一层卡片 */
-  padding-left: var(--space-5);
-  border-left: 2px solid var(--divider-strong);
+  max-width: 46rem;
+}
+
+/* 画框：底色 + 内衬 + 阴影。用 --bg-elevated 而不是纯白，
+   因为深色主题下纯白画框会刺眼；浅色主题下 --bg-elevated 本就是白。 */
+.project__shot-frame {
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 0 var(--divider), 0 18px 40px -20px rgba(0, 0, 0, 0.36);
 }
 
 .project__shot-img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: var(--radius-md);
-  /* 截图自带深色背景，给它一道细边，避免与页面暗色背景糊在一起 */
-  border: 1px solid var(--divider-strong);
-  background: var(--surface-panel);
+  border-radius: 1px;
 }
 
+/* 展签：一条短横线 + 说明，与首屏画作的展签同构 */
 .project__shot-caption {
-  margin-top: var(--space-3);
+  position: relative;
+  margin-top: var(--space-4);
+  padding-left: calc(var(--space-6) + var(--space-2));
   font-size: var(--text-xs);
   line-height: var(--leading-ui);
   color: var(--text-tertiary);
   max-width: var(--measure);
 }
+.project__shot-caption::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: var(--space-6);
+  height: 1px;
+  background: var(--divider-strong);
+}
 
-/* 窄屏：左边线会挤掉本来就紧的横向空间，改为上方细线 */
+/* 窄屏：画框内衬收窄，给内容留出横向空间 */
 @media (max-width: 40rem) {
   .project__shot {
-    padding-left: 0;
+    max-width: none;
     padding-top: var(--space-5);
     border-left: none;
     border-top: 1px solid var(--divider-strong);

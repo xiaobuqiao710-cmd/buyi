@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>M1 · 雾面</title>
+<style>
+/* ============================================================================
+   M1「雾面」—— 画作退为底子，内容在前
+
+   取材：《吉维尼附近的塞纳河支流（雾）》1897。
+   这张画几乎没有硬边，雾紫到灰蓝是连续过渡，左侧一片深色树影——
+   天然就是「能压住文字的底」，不需要额外加遮罩去救。
+   做法：整张铺满首屏、低饱和；内容区叠一层同色系渐变保证对比度；
+   色板直接取自画作本身（雾紫 251° / 灰蓝 233° / 暖灰 36°）。
+   ========================================================================= */
+:root{
+  --ink:#1c1a22;          /* 主文字：带一点紫的墨色，与画同源 */
+  --ink-2:#4a4653;
+  --ink-3:#6f6a79;
+  --haze:#aba8b8;         /* 主色，取自画作 28% 占比色 */
+  --haze-2:#b4b1c0;
+  --deep:#777a91;
+  --warm:#a8998f;         /* 画中的暖调，用作强调 */
+  --line:rgba(28,26,34,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,"SF Pro SC","PingFang SC","Helvetica Neue",sans-serif;
+  color:var(--ink); background:#faf9fb;
+  -webkit-font-smoothing:antialiased;
+}
+.stage{position:relative;min-height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* 画作层：整幅铺满，饱和度略降，让文字能站住 */
+.painting{
+  position:absolute;inset:0;z-index:0;
+  background:url(mist.jpg) center 38%/cover no-repeat;
+  filter:saturate(.92) contrast(.97);
+}
+/* 内容区一侧压一层同色雾，制造可读区；不是黑色遮罩，是同色系加白 */
+.veil{
+  position:absolute;inset:0;z-index:1;
+  /* 只压住左侧文字列（约 46% 宽），右侧保留画作本身。
+     原先压到 78% 导致画几乎不可见，等于白放一张图。 */
+  background:
+    linear-gradient(96deg,
+      rgba(250,249,251,.95) 0%,
+      rgba(250,249,251,.90) 30%,
+      rgba(250,249,251,.72) 42%,
+      rgba(250,249,251,.26) 52%,
+      rgba(250,249,251,.04) 60%,
+      rgba(250,249,251,0) 64%);
+}
+/* 底部再压一道，让页脚与数字站得住 */
+.veil::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:38%;
+  background:linear-gradient(to top, rgba(250,249,251,.95) 30%, rgba(250,249,251,0));
+}
+
+.bar{
+  position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;
+  padding:22px clamp(24px,5vw,72px);flex:none;
+}
+.brand{font-size:15px;font-weight:600;letter-spacing:.01em}
+.brand span{color:var(--ink-3);font-weight:400;margin-left:10px;font-size:13px}
+.nav{display:flex;gap:26px;font-size:14px}
+.nav a{color:var(--ink-2);text-decoration:none}
+.nav a:hover{color:var(--ink)}
+
+.wrap{position:relative;z-index:2;flex:1;display:flex;align-items:center;
+  padding:0 clamp(24px,5vw,72px)}
+.inner{max-width:620px}
+
+.eyebrow{font-size:13px;color:var(--ink-3);letter-spacing:.04em;margin-bottom:20px}
+
+h1{
+  font-size:clamp(52px,7.4vw,104px);
+  line-height:1.04;letter-spacing:-.035em;font-weight:700;
+  margin-bottom:22px;
+}
+.claim{
+  font-size:clamp(19px,2.1vw,25px);line-height:1.45;color:var(--ink-2);
+  font-weight:500;margin-bottom:18px;
+}
+.claim b{color:var(--ink);font-weight:600;
+  /* 中文没有斜体传统，强调用一道手绘感的底线 —— 但这里用画里的暖色 */
+  box-shadow:inset 0 -.42em 0 rgba(168,153,143,.34);
+}
+.body{font-size:17px;line-height:1.78;color:var(--ink-2);margin-bottom:34px;max-width:34em}
+
+.cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:13px 24px;border-radius:999px;font-size:15px;font-weight:500;
+  text-decoration:none;border:1px solid transparent;cursor:pointer;
+  transition:transform .16s cubic-bezier(.22,.61,.36,1), box-shadow .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn--solid{background:var(--ink);color:#fff}
+.btn--glass{
+  color:var(--ink);
+  background:rgba(255,255,255,.5);
+  border-color:rgba(28,26,34,.12);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);
+  backdrop-filter:blur(14px) saturate(1.6);
+}
+.btn--quiet{color:var(--ink-2);padding-left:6px}
+
+/* 页脚数字：不用卡片，只用一条细线与画作分隔 */
+.figures{
+  position:relative;z-index:2;flex:none;
+  margin:0 clamp(24px,5vw,72px) 0;
+  border-top:1px solid var(--line);
+  padding:26px 0 40px;
+  display:flex;gap:clamp(34px,6vw,86px);align-items:flex-start;
+}
+.fig b{display:block;font-size:clamp(30px,3.4vw,42px);line-height:1;font-weight:650;letter-spacing:-.02em}
+.fig span{display:block;margin-top:9px;font-size:13px;color:var(--ink-3)}
+.credit{
+  position:relative;z-index:2;flex:none;
+  margin:0 clamp(24px,5vw,72px);
+  padding:0 0 18px;
+  text-align:right;
+  font-size:12.5px;color:var(--ink-3);letter-spacing:.02em;
+}
+.fig-note{margin-left:auto;font-size:13px;color:var(--ink-3);max-width:26em;line-height:1.6;text-align:right}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="painting"></div>
+  <div class="veil"></div>
+
+  <div class="bar">
+    <div class="brand">宋建豪<span>法律 × AI</span></div>
+    <nav class="nav">
+      <a href="#work">AI 项目</a><a href="#experience">法律经历</a><a href="#education">教育荣誉</a><a href="#contact">联系</a>
+    </nav>
+  </div>
+
+  <div class="wrap">
+    <div class="inner">
+      <p class="eyebrow">北京 · 法律硕士 · 法律职业资格 A 类</p>
+      <h1>宋建豪</h1>
+      <p class="claim">在红圈与精品所的证券、IPO 项目里做检索与文书；<br>同时把这条工作流拆开、<b>重建成可复用的 AI Agent 系统</b>。</p>
+      <p class="body">北京大学法律硕士（金融法）。五个 AI 项目全部独立完成并已上线，它们在做同一件事：把一条真实的工作流拆开、重建成可复用、可校验、可自动化运行的系统。</p>
+      <div class="cta">
+        <a class="btn btn--solid" href="#">↓ 下载简历</a>
+        <a class="btn btn--glass" href="#work">查看 AI 项目</a>
+        <a class="btn btn--quiet" href="#contact">邮件联系 →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 画作展签：给画一个出处，也让右侧不再是死白 -->
+  <p class="credit">克劳德·莫奈《吉维尼附近的塞纳河支流（雾）》，1897 年</p>
+
+  <div class="figures">
+    <div class="fig"><b>5</b><span>个 AI 项目</span></div>
+    <div class="fig"><b>4</b><span>个专职 Agent</span></div>
+    <div class="fig"><b>5</b><span>条自动化链路</span></div>
+    <p class="fig-note">全部来自本人独立完成并已上线的项目，数字可回溯到项目详情。</p>
+  </div>
+</div>
+</body>
+</html>

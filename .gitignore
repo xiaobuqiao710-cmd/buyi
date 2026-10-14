@@ -13,3 +13,7 @@ dist-ssr
 
 # 设计调研的标杆截图：版权属原站点，仅作本地比对，不随仓库分发
 design/refs/
+
+# 设计原型素材（含莫奈画作的高清裁切件，体积大且只在本地做原型时用）
+# 正式站点用的是 public/art/ 下压过的版本
+design/prototypes/monet/*.jpg

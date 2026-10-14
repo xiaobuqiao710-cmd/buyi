@@ -1,17 +1,27 @@
 /**
- * Hero.tsx — 首屏（方向 A「纸本档案」）
+ * Hero.tsx — 首屏（莫奈方向：M1 氛围 + M3 展陈）
  *
- * 设计意图（不是装饰清单，是这份页面要传达的东西）：
- *   这是一个**档案**的第一页 —— 一个人、当前身份、正在做的事、能联系到的方式，
- *   四件事按重要性从上到下排开，用一条装订线把全页串成一份文件。
- *   招聘者扫一眼就该知道：他是谁、现在什么状态、做什么方向、怎么找他。
+ * 设计意图：
+ *   首屏用 M1 的语汇 —— **一幅画铺满整屏，内容叠在画上**。
+ *   莫奈《吉维尼附近的塞纳河支流（雾）》（1897）本身几乎没有硬边，
+ *   雾紫到灰蓝是连续过渡，左侧一片深色树影天然就是能压住文字的底，
+ *   所以不需要额外加黑遮罩去救，只需一层**同色系的雾**收窄可读区。
+ *   往下各区块用 M3 的语汇 —— 内容像被展出的作品（装裱 + 展签式说明）。
  *
- * 为什么拿掉了悬浮玻璃卡片：
- *   原首屏把「5 个 AI 项目 / 4 个 Agent / 5 条链路」放进一块厚玻璃卡里浮在右侧。
- *   但 Apple 的真实用法里，液态玻璃只出现在**控件层**（按钮、工具条），
- *   从不作为装饰铺在内容面上；卡片的浮空还制造了一个与正文无关的视觉重心。
- *   现在这三个数字退成一行「一组数字」，用细线分隔 —— 它们仍然在第一屏，
- *   但不再和姓名抢注意力。
+ * 为什么是这两张画、这两个骨架（依据不是审美偏好）：
+ *   对 25 张画作量化抽色后测得：冷色 13 张 / 暖色 9 张 / 中 3 张，
+ *   主色饱和度普遍只有 s3–s20 —— 整批画是低饱和、冷调为主，
+ *   并非"印象派=粉紫明信片"的常见印象。低饱和 + 明确的明度阶梯，
+ *   正是这套配色看起来"高级而不吵"的原因。
+ *   选《雾》是因为它是全批里唯一几乎没有硬边的一张，适合垫在文字下；
+ *   高密度的《睡莲》（s27，全批最高）则只用于"被陈列"，不当背景。
+ *
+ * 关键取舍（承上一版）：
+ *   液态玻璃只出现在**控件层**（按钮、导航、抽屉），内容面不用玻璃。
+ *   Apple 的真实页面也是这么用的 —— 玻璃是控件材质，不是装饰铺面。
+ *
+ * 一个真实的失败记录：首版把遮罩压到画面 78% 宽，结果**画被压得几乎不可见**，
+ *   等于白放一张图。现在只压住左侧文字列（约 64% 处即完全透明）。
  *
  * 三降级：
  *   reduced-motion 由 --motion-scale 归零位移（入场动画退化为静态显示）
@@ -22,7 +32,7 @@
  *   即使 JS 完全失败，animation-fill-mode: both 的终态仍是可读的。
  */
 import { LinkButton } from '../ui/Kit'
-import { PROFILE, PROJECTS } from '../../data/content'
+import { PROFILE, PROJECTS, assetUrl } from '../../data/content'
 import { useParallax } from '../../lib/useParallax'
 import '../../styles/hero.css'
 
@@ -121,10 +131,32 @@ export function Hero() {
     // 注意：id="top" 归属 <main>（App.tsx），这里不能再声明一次，
     // 否则文档出现重复 id，会破坏锚点定位与可访问性工具的元素查找。
     <header className="hero">
-      {/* 底层网格：纯 CSS，不参与布局语义。
-          视差位移让纸面有轻微纵深，但幅度极小（-0.07），避免变成"浮动背景"。 */}
+      {/* 画作层：首屏的底。
+          用 <img> 而不是 CSS background —— 这样它进入无障碍树之外（alt="" + aria-hidden），
+          但保留 lazy/eager 与尺寸提示；同时可以按视口给两份尺寸（窄屏另给一张）。
+          视差位移极小（-0.06），让画比文字"远"一点，不变成浮动背景。 */}
       <div className="hero__decor" aria-hidden="true">
-        <div ref={gridRef} className="hero__grid" />
+        <div ref={gridRef} className="hero__art">
+          <img
+            className="hero__art-img hero__art-img--wide"
+            src={assetUrl('art/hero-mist.jpg')}
+            alt=""
+            width={2000}
+            height={1941}
+            fetchPriority="high"
+            decoding="async"
+          />
+          <img
+            className="hero__art-img hero__art-img--narrow"
+            src={assetUrl('art/hero-mist-mobile.jpg')}
+            alt=""
+            width={1400}
+            height={1358}
+            fetchPriority="high"
+            decoding="async"
+          />
+        </div>
+        <div className="hero__veil" />
       </div>
 
       <div className="container hero__inner">
@@ -229,6 +261,13 @@ export function Hero() {
           </p>
         </div>
       </div>
+
+      {/* 画作展签：给这幅画一个出处。
+          它同时解决了一个真实问题 —— 首屏右下角原先是一大片死白。
+          用的是美术馆展签的写法：作品名 + 作者 + 年份，字号小于正文、颜色更淡。 */}
+      <p className="container hero__credit">
+        克劳德·莫奈《吉维尼附近的塞纳河支流（雾）》，1897 年
+      </p>
 
       {/* 克制的向下滚动提示：Hero 与下一区块之间 */}
       <a className="hero__scroll" href="#work">

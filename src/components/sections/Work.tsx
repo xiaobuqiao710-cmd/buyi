@@ -164,12 +164,16 @@ function ProjectMore({ project, id, dense }: { project: Project; id: string; den
             放进 grid 再跨列也跨不出列宽；放在这里它才占满整个条目宽度。 */}
         {project.shot ? (
           <figure className="project__shot">
-            <img
-              className="project__shot-img"
-              src={assetUrl(project.shot.src)}
-              alt={project.shot.caption}
-              decoding="async"
-            />
+            {/* 画框：与首屏那幅莫奈同样的展陈语汇 —— 内衬留白 + 细边 + 阴影，
+                截图因此读起来是"被展出的一件作品"，而不是贴进文档的附件。 */}
+            <div className="project__shot-frame">
+              <img
+                className="project__shot-img"
+                src={assetUrl(project.shot.src)}
+                alt={project.shot.caption}
+                decoding="async"
+              />
+            </div>
             <figcaption className="project__shot-caption">{project.shot.caption}</figcaption>
           </figure>
         ) : null}

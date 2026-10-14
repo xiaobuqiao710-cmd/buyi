@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>M3 · 画框</title>
+<style>
+/* ============================================================================
+   M3「画框」—— 画作是一件被展出的作品，信息在旁边的展签上
+
+   取材：《睡莲》1906 —— 25 张里笔触最密、色彩最丰富的一张（主色 #5f7482
+   灰蓝 s27，是全批饱和度最高者）。高密度画面不适合当背景，但非常适合当主角。
+   做法：左侧一幅有边距的"画作"，右侧是美术馆展签式的信息栏。
+   整页只用「纸 + 墨 + 一道水色」，把画让给唯一的焦点。
+   ========================================================================= */
+:root{
+  --paper:#efeef2;
+  --card:#fbfafc;
+  --ink:#15141c;
+  --ink-2:#3e3b4a;
+  --ink-3:#6d6a7c;
+  --water:#4f6b78;       /* 取自睡莲的灰蓝 */
+  --mist:#8a879c;
+  --sand:#9d8b7c;
+  --line:rgba(21,20,28,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"SF Pro SC","PingFang SC",serif;
+  color:var(--ink);background:var(--paper);-webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;flex-direction:column}
+
+.bar{display:flex;align-items:center;justify-content:space-between;
+  padding:22px clamp(24px,5vw,72px);flex:none}
+.brand{font-size:15px;font-weight:600}
+.brand span{color:var(--ink-3);font-weight:400;margin-left:10px;font-size:13px}
+.nav{display:flex;gap:26px;font-size:14px}
+.nav a{color:var(--ink-2);text-decoration:none}
+.nav a:hover{color:var(--ink)}
+
+.wrap{flex:1;display:grid;grid-template-columns:1.02fr 1fr;gap:clamp(28px,5vw,72px);
+  align-items:center;padding:0 clamp(24px,5vw,72px) 40px}
+
+/* 画作：像挂在墙上，四周留白 + 一道细边 + 极淡投影 */
+.canvas{position:relative}
+.canvas{padding:14px;background:var(--card);
+  box-shadow:0 1px 0 var(--line), 0 26px 60px -22px rgba(21,20,28,.30)}
+.canvas img{width:100%;display:block;filter:saturate(.94)}
+/* 展签：一条短线 + 作品信息，字体比正文小、颜色更淡 */
+.plate{margin-top:18px;display:flex;gap:14px;align-items:flex-start;
+  font-size:12.5px;line-height:1.6;color:var(--ink-3)}
+.plate::before{content:'';flex:none;width:26px;height:1px;background:var(--line);margin-top:.65em}
+.plate em{font-style:normal;color:var(--ink-2)}
+
+/* 右侧信息栏 */
+.info{max-width:540px}
+.eyebrow{font-size:13px;color:var(--ink-3);letter-spacing:.04em;margin-bottom:18px}
+h1{font-size:clamp(50px,6.2vw,92px);line-height:1.06;letter-spacing:-.032em;
+  font-weight:700;margin-bottom:22px}
+.claim{font-size:clamp(18px,1.7vw,22px);line-height:1.5;color:var(--ink-2);
+  font-weight:500;margin-bottom:18px}
+.claim b{font-weight:600;color:var(--water);box-shadow:inset 0 -.5em 0 rgba(79,107,120,.14)}
+.body{font-size:16px;line-height:1.76;color:var(--ink-2);margin-bottom:30px}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:12px 22px;border-radius:999px;
+  font-size:15px;font-weight:500;text-decoration:none;border:1px solid transparent;
+  transition:transform .16s cubic-bezier(.22,.61,.36,1)}
+.btn:active{transform:scale(.97)}
+.btn--solid{background:var(--ink);color:#fff}
+.btn--outline{color:var(--ink);border-color:var(--line);background:var(--card)}
+.btn--quiet{color:var(--ink-2);padding-left:4px}
+
+/* 底栏：三色短线仍保留，位置改到信息栏下方，不压画作 */
+.figures{border-top:1px solid var(--line);padding:24px 0 34px;flex:none;
+  display:flex;gap:clamp(30px,5vw,70px)}
+.fig{position:relative;padding-top:14px}
+.fig::before{content:'';position:absolute;top:0;left:0;width:30px;height:2px}
+.fig--a::before{background:var(--mist)}
+.fig--b::before{background:var(--water)}
+.fig--c::before{background:var(--sand)}
+.fig b{display:block;font-size:clamp(26px,2.6vw,34px);line-height:1;font-weight:650;letter-spacing:-.02em}
+.fig span{display:block;margin-top:8px;font-size:12.5px;color:var(--ink-3)}
+.foot{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.fig-note{font-size:12.5px;color:var(--ink-3);max-width:26em;line-height:1.6}
+.pad{padding:0 clamp(24px,5vw,72px)}
+
+/* ---- 窄屏收敛 ----
+   原稿是固定两列网格，390px 下会把顶栏压成每行两三字、
+   画作缩成邮票、正文每行只剩 8 个字 —— 属未完成状态。
+   窄屏改为单列：画作在上、信息在下，且画作不占满高度。 */
+@media (max-width: 56rem){
+  .nav{gap:16px;font-size:13px}
+  .brand span{display:none}
+  .wrap{
+    grid-template-columns:minmax(0,1fr);
+    gap:28px;
+    align-items:start;
+    padding-bottom:28px;
+  }
+  .canvas{max-width:min(88vw,420px);margin:0 auto}
+  .info{max-width:none}
+  h1{font-size:clamp(40px,11vw,58px)}
+  .claim{font-size:18px}
+  .body{font-size:15.5px;line-height:1.72}
+  .foot{flex-direction:column;align-items:flex-start;gap:16px}
+  .fig-note{text-align:left}
+  .plate{font-size:12px}
+}
+</style>
+</head>
+<body>
+  <div class="bar">
+    <div class="brand">宋建豪<span>法律 × AI</span></div>
+    <nav class="nav"><a href="#work">AI 项目</a><a href="#experience">法律经历</a><a href="#education">教育荣誉</a><a href="#contact">联系</a></nav>
+  </div>
+
+  <div class="wrap">
+    <figure class="canvas">
+      <img src="lilies.jpg" alt="克劳德·莫奈《睡莲》，1906 年">
+      <figcaption class="plate">
+        <span><em>睡莲</em>　克劳德·莫奈，1906 年</span>
+      </figcaption>
+    </figure>
+
+    <div class="info">
+      <p class="eyebrow">北京 · 法律硕士 · 法律职业资格 A 类</p>
+      <h1>宋建豪</h1>
+      <p class="claim">在红圈与精品所的证券、IPO 项目里做检索与文书；同时把这条工作流拆开、<b>重建成可复用的 AI Agent 系统</b>。</p>
+      <p class="body">北京大学法律硕士（金融法）。五个 AI 项目全部独立完成并已上线，它们在做同一件事：把一条真实的工作流拆开、重建成可复用、可校验、可自动化运行的系统。</p>
+      <div class="cta">
+        <a class="btn btn--solid" href="#">↓ 下载简历</a>
+        <a class="btn btn--outline" href="#work">查看 AI 项目</a>
+        <a class="btn btn--quiet" href="#contact">邮件联系 →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="pad">
+    <div class="foot">
+      <div class="figures" style="border:0;padding:0">
+        <div class="fig fig--a"><b>5</b><span>个 AI 项目</span></div>
+        <div class="fig fig--b"><b>4</b><span>个专职 Agent</span></div>
+        <div class="fig fig--c"><b>5</b><span>条自动化链路</span></div>
+      </div>
+      <p class="fig-note">全部来自本人独立完成并已上线的项目，数字可回溯到项目详情。</p>
+    </div>
+  </div>
+</body>
+</html>

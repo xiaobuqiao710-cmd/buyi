@@ -502,3 +502,151 @@
     gap: var(--space-4) var(--space-6);
   }
 }
+
+/* ============================================================================
+   首屏画作层（莫奈 M1 骨架）
+
+   为什么是「画铺满 + 一层同色雾」而不是「画铺满 + 黑色遮罩」：
+   黑色遮罩会把莫奈的雾紫压成灰泥，整幅画的色彩信息全丢；
+   而用同色系（画自己的亮部色 #f5f4f7）做渐变，画会像**退到雾里**，
+   文字区域自然变浅，右侧仍保留笔触。这是留住画的办法。
+   ========================================================================= */
+
+.hero__art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  will-change: transform;
+  transform: translate3d(0, var(--parallax-y, 0px), 0);
+}
+
+.hero__art-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 焦点略偏上：画的视觉重心在上半部的雾与树影 */
+  object-position: 50% 38%;
+  /* 稍微收一点饱和：原画在高清屏上偏艳，收 8% 更接近"看画"而不是"看海报" */
+  filter: saturate(0.94) contrast(0.98);
+}
+/* 窄屏专用图：手机竖构图里 cover 会把主体裁掉，换一张按竖屏重新取景的 */
+.hero__art-img--narrow { display: none; }
+
+/* 可读区：只压住左侧文字列。
+   关键数字 —— 64% 处已完全透明。首版压到 78%，结果画几乎看不见，
+   等于白放一张图（这是一次真实的返工，不是预防性调整）。 */
+.hero__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      96deg,
+      var(--bg-base) 0%,
+      color-mix(in srgb, var(--bg-base) 92%, transparent) 30%,
+      color-mix(in srgb, var(--bg-base) 74%, transparent) 42%,
+      color-mix(in srgb, var(--bg-base) 28%, transparent) 52%,
+      color-mix(in srgb, var(--bg-base) 6%, transparent) 60%,
+      transparent 64%
+    ),
+    /* 底部再压一道，让「一组数字」与展签站得住 —— 但只到 34% 高，不吃画面中部 */
+    linear-gradient(to top, color-mix(in srgb, var(--bg-base) 94%, transparent) 0%, transparent 34%);
+}
+
+/* 展签：美术馆写法。作品名 + 作者 + 年份，字号小于正文、颜色更淡、右对齐。 */
+.hero__credit {
+  position: relative;
+  z-index: var(--z-raised);
+  margin-bottom: var(--space-5);
+  text-align: right;
+  font-size: var(--text-xs);
+  line-height: var(--leading-ui);
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+
+/* 窄屏：改用竖屏取景图，且雾改成自上而下的整幅渐隐 ——
+   手机上文字占满宽度，左右分栏的可读区不成立，只能整幅压淡。 */
+@media (max-width: 56rem) {
+  .hero__art-img--wide { display: none; }
+  .hero__art-img--narrow { display: block; object-position: 50% 30%; }
+  .hero__veil {
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--bg-base) 55%, transparent) 0%,
+        color-mix(in srgb, var(--bg-base) 78%, transparent) 34%,
+        color-mix(in srgb, var(--bg-base) 92%, transparent) 62%,
+        var(--bg-base) 100%
+      );
+  }
+  .hero__credit { text-align: left; }
+}
+
+/* ① 降低动态：视差归零（Hook 已处理），这里去掉合成层提示 */
+@media (prefers-reduced-motion: reduce) {
+  .hero__art { will-change: auto; }
+}
+
+/* ② 降低透明度：不做渐变叠层，直接把画压淡并转成实底，
+      因为「雾」本身是一种半透明效果。 */
+@media (prefers-reduced-transparency: reduce) {
+  .hero__art-img { opacity: 0.28; }
+  .hero__veil { background: none; }
+  .hero__veil::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg-base);
+    opacity: 0.62;
+  }
+}
+
+/* ③ 提高对比：画可能干扰文字，直接压到最淡，让文字完全站实底 */
+@media (prefers-contrast: more) {
+  .hero__art-img { opacity: 0.22; }
+  .hero__veil { background: none; }
+  .hero__veil::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg-base);
+    opacity: 0.78;
+  }
+}
+
+/* 打印：画作是屏幕上的氛围，纸上不要（既费墨又干扰阅读）。
+   展签保留 —— 它是一条事实信息。 */
+@media print {
+  .hero__art { display: none; }
+}
+
+/* ---- 深色主题：画需要"压暗"，否则浅色文字压不住 ----
+   实测问题：深色主题下右侧画作偏亮，导航与装订线的浅色文字叠在其上
+   （navColor rgb(242,240,246) 对上一片中灰的雾），"01 首页"几乎不可读。
+   浅色主题没这个问题，因为深墨文字压在浅画上天然成立。
+   做法不是给文字加描边（会显脏），而是把画整体压暗、并把文字侧的雾换成深色。 */
+:root,
+:root[data-theme='dark'] {
+  --hero-art-dim: 0.62;   /* 画作不透明度 */
+}
+
+[data-theme='dark'] .hero__art-img {
+  /* 压暗 + 略降饱和：让画退成"夜色里的画"，文字浮出来 */
+  filter: saturate(0.72) brightness(0.58) contrast(1.02);
+}
+
+/* 深色下装订线（01–05）压在画上要保证可读，
+   但**不能用矩形暗底** —— 试过，会变成五个灰色小方块贴在画上，
+   补救措施本身成了视觉噪音（一次真实的返工）。
+   改用文字阴影：它给笔画一圈暗晕、不产生任何形状，画仍然是完整的。 */
+[data-theme='dark'] .hero__spine-item,
+[data-theme='dark'] .hero__spine-no {
+  text-shadow:
+    0 1px 3px color-mix(in srgb, var(--bg-base) 92%, transparent),
+    0 0 12px color-mix(in srgb, var(--bg-base) 70%, transparent);
+}
+[data-theme='dark'] .hero__spine-line {
+  background: color-mix(in srgb, var(--divider-strong) 78%, transparent);
+}
