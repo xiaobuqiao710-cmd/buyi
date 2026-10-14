@@ -22,6 +22,21 @@
 
 产物：JS ~179 kB（gzip ~62 kB）+ CSS ~52 kB（gzip ~10 kB）。
 
+### 关于 `npm audit` 的 2 条告警
+
+`npm ci` 会报 `2 vulnerabilities (1 moderate, 1 high)`，指向 `esbuild <= 0.24.2`
+（经 `vite <= 6.4.2` 传递依赖）。**不要为此跑 `npm audit fix --force`**——
+它会把 vite 升到 8.x，是破坏性升级。
+
+判断依据（实测，不是推测）：
+
+- 该漏洞（[GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)）的描述是
+  「esbuild 的开发服务器允许任意网站向其发起请求并读取响应」，影响面是 **dev server**。
+- 本站部署的是 `vite build` 出的静态 `dist/`，**不含 dev server**。
+- 实测 `dist/` 产物里 `esbuild` 与 `vite` 出现次数均为 **0**。
+- `dependencies` 只有 `react` / `react-dom`，这两个没有已知漏洞；
+  esbuild 与 vite 都在 `devDependencies`。
+
 ---
 
 ## 设计语言：纸本档案
