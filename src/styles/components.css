@@ -32,6 +32,25 @@
 }
 
 /* 主按钮：实底强调。反馈必须在 pointer-down 立刻出现 */
+/* ---------- 键盘焦点环 ----------
+   真实缺陷（已修）：.btn--primary 与 .btn--glass 各自声明了 box-shadow: var(--shadow-sm)。
+   它与 base.css 的 :focus-visible 特异性同为 (0,1,0)，而 components.css 后加载，
+   于是这两类按钮的**静息投影覆盖了焦点环** —— 键盘用户 Tab 到「下载简历」
+   「查看 AI 项目」「访问站点」时看不到任何焦点指示（WCAG 2.4.7 失败）。
+   .btn--ghost 不声明 box-shadow，所以一直是好的，这也解释了为什么只有部分按钮出问题。
+
+   修法：用 .btn:focus-visible（特异性 (0,2,0)）显式拿回焦点环，
+   并在阴影里同时保留静息投影，避免聚焦瞬间按钮"塌陷"。
+   放在变体规则之前不行（仍会被覆盖），必须放在其后或用足够特异性 —— 这里用后者。 */
+.btn:focus-visible {
+  box-shadow: var(--focus-ring), var(--shadow-sm);
+}
+
+/* 指针点击不显示焦点环（与 base.css 的 :focus:not(:focus-visible) 同口径） */
+.btn:focus:not(:focus-visible) {
+  box-shadow: var(--shadow-sm);
+}
+
 .btn--primary {
   background: var(--accent);
   color: var(--text-on-accent);

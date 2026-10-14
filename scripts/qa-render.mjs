@@ -86,6 +86,22 @@ const CHROME_CANDIDATES = [
   '/usr/bin/chromium',
 ]
 
+/* 供 Tab 走查使用的焦点探针：返回当前聚焦元素的焦点环状态。
+   焦点环特征 = box-shadow 含 3px 且颜色为 accent（浅色 59,86,224 / 深色 110,139,255）。 */
+const FOCUS_PROBE = `(()=>{
+  const a = document.activeElement;
+  if(!a || a === document.body) return null;
+  const cs = getComputedStyle(a);
+  const bs = cs.boxShadow || 'none';
+  const hasRing = /59,\\s*86,\\s*224|110,\\s*139,\\s*255/.test(bs) && /3px/.test(bs);
+  return JSON.stringify({
+    tag: a.tagName,
+    text: (a.innerText || a.getAttribute('aria-label') || '').trim().slice(0,24) || '(无文本)',
+    focusVisible: a.matches(':focus-visible'),
+    hasRing,
+    bs: bs.slice(0,60)
+  })})()`
+
 function findChrome() {
   for (const c of CHROME_CANDIDATES) {
     try {
@@ -222,6 +238,33 @@ const PROBE_FN = `(() => {
   const mainText = (document.querySelector('main')?.innerText || '').trim();
   out.info.mainTextLen = mainText.length;
   if(mainText.length < 200) out.failures.push('主内容文本过少（'+mainText.length+' 字符），可能未渲染');
+
+  /* ---------- 键盘焦点可见性（WCAG 2.4.7）----------
+     真实缺陷（已修）：.btn--primary 与 .btn--glass 各自声明了 box-shadow: var(--shadow-sm)，
+     与 base.css 的 :focus-visible 特异性同为 (0,1,0)，而 components.css 后加载，
+     于是静息投影覆盖了焦点环 —— 键盘用户 Tab 到「下载简历」「查看 AI 项目」「访问站点」
+     时完全看不到焦点指示。.btn--ghost 不声明 box-shadow 所以一直正常，
+     这也是为什么肉眼抽查容易漏掉：只有部分按钮坏。
+
+     这里逐个 Tab 走一遍，对每个获得 :focus-visible 的元素检查其 box-shadow
+     是否含焦点环色（--focus-ring 用 accent）。 */
+  const focusProbe = (() => {
+    const a = document.activeElement;
+    if (!a || a === document.body) return null;
+    const cs = getComputedStyle(a);
+    const bs = cs.boxShadow || 'none';
+    /* 焦点环特征：3px 扩散 + accent 色。浅色主题 accent = rgb(59,86,224)，
+       深色主题 = rgb(110,139,255)。任一命中即认为环存在。 */
+    const hasRing = /59,\s*86,\s*224|110,\s*139,\s*255/.test(bs) && /3px/.test(bs);
+    return {
+      tag: a.tagName,
+      text: (a.innerText || a.getAttribute('aria-label') || '').trim().slice(0, 24) || '(无文本)',
+      focusVisible: a.matches(':focus-visible'),
+      hasRing,
+      bs: bs.slice(0, 60),
+    };
+  })();
+  out.info.focusSample = focusProbe;
 
   /* 各区块是否真的渲染出内容 */
   const sections = {};
@@ -509,6 +552,39 @@ try {
   console.log(
     `导航材质化: 顶部 bf=${navTop.bf} → 滚动后 bf=${navScrolled.bf} → 回顶 bf=${navBack.bf}`,
   )
+
+  /* ---------- 键盘 Tab 全量走查：每个可达元素都必须有可见焦点环 ---------- */
+  {
+    const noRing = []
+    let visited = 0
+    for (let i = 0; i < 26; i++) {
+      await client.send('Input.dispatchKeyEvent', {
+        type: 'keyDown', key: 'Tab', code: 'Tab',
+        windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9,
+      })
+      await client.send('Input.dispatchKeyEvent', {
+        type: 'keyUp', key: 'Tab', code: 'Tab',
+        windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9,
+      })
+      /* 等阴影过渡走完再读，否则会读到中间值（曾因此看到 0.0008px 的怪数） */
+      await sleep(420)
+      const got = await client.send('Runtime.evaluate', { returnByValue: true, expression: FOCUS_PROBE })
+      if (!got.result.value) continue
+      const cur = JSON.parse(got.result.value)
+      visited++
+      if (!cur.focusVisible) continue
+      if (!cur.hasRing) noRing.push(`${cur.tag} "${cur.text}" box-shadow=${cur.bs}`)
+    }
+    console.log(
+      `键盘焦点: 走查 ${visited} 个可达元素，缺焦点环 ${noRing.length} 个`,
+    )
+    if (noRing.length) {
+      out.failures.push('键盘聚焦时无可见焦点环: ' + noRing.slice(0, 6).join(' | '))
+    }
+    if (visited < 8) {
+      out.failures.push(`可键盘聚焦元素过少（仅 ${visited} 个），Tab 序列可能被破坏`)
+    }
+  }
 
   console.log('\n文本对比度 (WCAG AA):')
   for (const c of out.checks) {
