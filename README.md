@@ -145,6 +145,19 @@ BASE_PATH=/buyi/ npm run build
 同样地，`public/` 下的资源（简历 PDF、favicon）**不能写相对路径**——
 相对路径会从站点根解析。统一走 `assetUrl()`。
 
+### 部署后要改的一处（可选）
+
+`index.html` 里的 `og:image` 用的是 `%BASE_URL%og.png`（相对站点根）。
+微信、飞书、钉钉在抓取预览时**不解析相对路径**，若发现分享卡片没有图，
+把这两行换成绝对地址即可：
+
+```html
+<meta property="og:image" content="https://<用户名>.github.io/buyi/og.png" />
+<meta name="twitter:image" content="https://<用户名>.github.io/buyi/og.png" />
+```
+
+不改也不影响页面本身，只是分享预览可能缺图。
+
 ### 仓库初始化（首次）
 
 **首选：跑部署脚本**（把登录之后的动作都固化了，不必记参数）：
