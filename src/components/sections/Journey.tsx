@@ -18,7 +18,7 @@
  */
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
-import { Chip, GlassCard, MetricRow, Reveal, Section } from '../ui/Kit'
+import { Chip, MetricRow, PanelCard, Reveal, Section } from '../ui/Kit'
 import { CAMPUS, EDUCATION, EXPERIENCES, HONORS, SKILLS } from '../../data/content'
 import type { Metric } from '../../data/content'
 // Co-located CSS：与 Hero / Chrome 同一约定
@@ -98,7 +98,7 @@ function TimelineItem({
 }) {
   return (
     <Reveal as="li" className="timeline__item" delay={delay}>
-      <GlassCard className="timeline__card" thickness="thick" radius="lg">
+      <PanelCard className="timeline__card" radius="lg">
         <div className="timeline__head">
           <div className="timeline__heading">
             <h3 className="timeline__title">{title}</h3>
@@ -107,7 +107,7 @@ function TimelineItem({
           {period}
         </div>
         {children ? <div className="timeline__body">{children}</div> : null}
-      </GlassCard>
+      </PanelCard>
     </Reveal>
   )
 }
@@ -187,7 +187,7 @@ function SkillGrid() {
     <div className="journey__skills grid grid--3">
       {SKILL_COLUMNS.map((col, i) => (
         <Reveal key={col.key} delay={i * 80}>
-          <GlassCard className="journey__skill-col" thickness="thin" radius="md">
+          <PanelCard className="journey__skill-col" radius="md">
             <p className="label journey__skill-title">{col.title}</p>
             <div className="chip-row">
               {col.items.map((item) => (
@@ -196,7 +196,7 @@ function SkillGrid() {
                 </Chip>
               ))}
             </div>
-          </GlassCard>
+          </PanelCard>
         </Reveal>
       ))}
     </div>
@@ -314,13 +314,13 @@ export function Journey() {
 
         {/* 硬指标放大展示：这些数字是竞争力的核心，要一眼看到 */}
         <Reveal className="journey__metrics-block" delay={120}>
-          <GlassCard className="journey__metrics-card" thickness="regular" radius="lg">
+          <PanelCard className="journey__metrics-card" radius="lg">
             <p className="label">学业硬指标</p>
             <MetricRow metrics={eduMetrics.length > 0 ? eduMetrics : [{ value: '—', label: '待补充' }]} />
             <p className="journey__metrics-note">
               名次口径来自综合测评与 GPA 排名，均取自在校成绩单。
             </p>
-          </GlassCard>
+          </PanelCard>
         </Reveal>
 
         <HonorStrip />

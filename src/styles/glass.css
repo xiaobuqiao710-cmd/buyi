@@ -294,3 +294,107 @@
   padding: 0.2rem 0.55rem;
   font-size: var(--text-micro);
 }
+
+/* ============================================================================
+   内容面板（.panel）—— 与玻璃并列的另一种表面
+   分工：玻璃属于**控件层**（导航、抽屉、按钮）；内容面用纸面 + 细边。
+   为什么需要它：把每段内容都装进浮空玻璃会造出多个与正文无关的视觉重心，
+   深浅玻璃层叠还会压低文字可读性；oil-ui 也把「卡片套卡片」列为要改掉的
+   模型默认做法。Apple 的真实页面同样只在控件上用液态玻璃。
+
+   面板不使用 backdrop-filter（没有可折射的东西时，模糊只是徒增开销），
+   层次由「底色比页面略亮一档 + 一道细边」建立。
+   ========================================================================= */
+
+.panel {
+  position: relative;
+  border-radius: var(--radius-xl);
+  background: var(--surface-panel);
+  border: 1px solid var(--divider);
+  transition: background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+.panel--r-sm {
+  border-radius: var(--radius-md);
+}
+.panel--r-md {
+  border-radius: var(--radius-lg);
+}
+.panel--r-lg {
+  border-radius: var(--radius-xl);
+}
+.panel--r-xl {
+  border-radius: var(--radius-2xl);
+}
+
+.panel-card--interactive {
+  cursor: pointer;
+}
+
+.panel-card--interactive:hover {
+  border-color: var(--divider-strong);
+  transform: translate3d(0, calc(-4px * var(--motion-scale)), 0);
+}
+
+/* 按下必须在 pointer-down 即刻反馈 —— 用 :active，不加 transition-delay */
+.panel-card--interactive:active {
+  transform: translate3d(0, 0, 0) scale(0.992);
+  transition-duration: var(--dur-instant);
+}
+
+@media (hover: none) {
+  .panel-card--interactive:hover {
+    transform: none;
+    border-color: var(--divider);
+  }
+}
+
+/* 面板上的指针跟随高光：用极淡的暖光，不是玻璃的顶边高光 */
+.panel-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    24rem 24rem at var(--glow-x, 50%) var(--glow-y, 50%),
+    var(--glow-tint),
+    transparent 70%
+  );
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+.panel-glow:hover::after {
+  opacity: 1;
+}
+
+/* 降低透明度：面板本来就是实底，这里只需把边框加重一档 */
+@media (prefers-reduced-transparency: reduce) {
+  .panel {
+    border-color: var(--divider-strong);
+  }
+}
+
+/* 提高对比：面板描边加重，与页面的区分更明确 */
+@media (prefers-contrast: more) {
+  .panel {
+    border-color: var(--divider-strong);
+    background: var(--bg-elevated);
+  }
+  .panel-glow::after {
+    display: none;
+  }
+}
+
+@media print {
+  .panel {
+    border: 1px solid currentColor;
+    background: transparent;
+  }
+  .panel-glow::after {
+    display: none;
+  }
+}

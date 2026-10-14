@@ -10,7 +10,8 @@
  *       因此展开/收起被抢占时不会跳。
  *   §4  两参数制 —— 展开/收起用 SPRING.move（damping 1.0 临界阻尼、response 0.4），
  *       没有动量手势参与，所以不给过冲。
- *   §12 材质与深度 —— 卡片是 .glass；指针跟随高光由 GlassCard 的 interactive + glow 提供。
+ *   §12 材质与深度 —— 卡片是内容面，用 .panel（纸面 + 细边），不用玻璃；
+ *       指针跟随高光由 PanelCard 的 interactive + glow 提供。
  *       抽象图形是卡片**内部**的平铺几何，不是第二层浅玻璃（浅玻璃叠浅玻璃可读性会崩）。
  *   §14 三降级 —— reduced-motion：不跑弹簧，直接落终值（无过渡位移）；
  *       reduced-transparency：图形去 blend、提高不透明度，靠描边读形状；
@@ -23,7 +24,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Chip, GlassCard, MetricRow, Reveal, Section } from '../ui/Kit'
+import { Chip, MetricRow, PanelCard, Reveal, Section } from '../ui/Kit'
 import { PROJECTS } from '../../data/content'
 import type { Project } from '../../data/content'
 import { SPRING, springValue } from '../../lib/spring'
@@ -170,9 +171,8 @@ function ProjectCard({ project, lead = false }: { project: Project; lead?: boole
   const expandRef = useExpandSpring(lead || open)
 
   return (
-    <GlassCard
+    <PanelCard
       className={`project ${lead ? 'project--lead' : 'project--compact'}`}
-      thickness={lead ? 'thick' : 'regular'}
       radius="lg"
       interactive
       glow
@@ -241,7 +241,7 @@ function ProjectCard({ project, lead = false }: { project: Project; lead?: boole
             中文正文会碎成 19 字/行。 */}
         <ProjectMore project={project} id={detailId} dense={!lead} />
       </div>
-    </GlassCard>
+    </PanelCard>
   )
 }
 

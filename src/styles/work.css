@@ -45,7 +45,8 @@
 @media (min-width: 48rem) {
   .work__list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-5);
+    /* 条目之间不再靠底色区分，纵向间距可以收紧 —— 分隔线已经承担了分组 */
+    gap: 0 var(--space-8);
   }
   /* 大卡横跨整行 —— 破坏 2×2 的规整，重点自然凸显 */
   .work__item--lead {
@@ -95,20 +96,23 @@
   .project--lead {
     padding: var(--space-7);
   }
+  /* 大卡：标记在左（固定小尺寸），正文在右占满剩余宽度。
+     标记不再是一块拉伸的视觉面板 —— 它是档案页边的记号，
+     让它占据 34% 宽度并撑满高度，等于又把它变回了"主视觉"。 */
   .project--lead .project__row {
     flex-direction: row;
-    align-items: stretch;
-    gap: var(--space-7);
+    align-items: flex-start;
+    gap: var(--space-6);
   }
   .project--lead .project__body {
-    flex: 1 1 62%;
+    flex: 1 1 auto;
     min-width: 0;
   }
   .project--lead .project__figure {
-    flex: 0 0 34%;
-    /* 竖直方向拉满，视觉与文字等高 —— 读起来是一整块，不是一张贴图 */
-    align-self: stretch;
-    min-height: 100%;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    /* 与标题的视觉顶端对齐，而不是与行盒顶端对齐 —— 标记读起来像盖在标题旁的章 */
+    margin-top: 0.15rem;
   }
 }
 
@@ -301,37 +305,35 @@
    （margin 会参与布局，展开时任何 margin 变化都会引起回流；统一由 gap 承担）。 */
 
 /* ============================================================================
-   抽象视觉 —— 每个项目一个几何身份
-   用 project.accentVar 上色；克制、几何、有呼吸感。
-   三要素：① 一个主形状（.project__shape--a）② 一个结构层（--b）③ 一个光晕（--c）。
-   全部只用 background / mask / filter / transform，不用图片、不用 base64。
+   项目标记 —— 取代原先的「抽象视觉」
+   原来每张卡顶部有一块 16:7 的渐变面板（径向光 + 模糊光晕 + mix-blend-mode），
+   那是 AI 生成页面的通用样貌，而且占掉卡片约四成面积却不承载任何信息 ——
+   属于「用大渐变顶替必要图像」。
+   现在改成左侧一枚小尺寸的**单色几何标记**：只用描边、不用填充渐变，
+   颜色取 --project-accent 的描边 + 纸面底色，像档案页边盖的编号章。
+   信息量不变（仍然一项目一图形），但重量从"主视觉"降到"记号"。
    ========================================================================= */
 
 .project__figure {
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--glass-border);
-  background: var(--glass-bg-subtle);
-  /* 呼吸感来自"底噪":一层极淡的径向光，让纯几何不至于干硬 */
-  background-image: radial-gradient(
-    120% 90% at 30% 0%,
-    var(--project-accent, var(--accent)),
-    transparent 62%
-  );
+  border-radius: var(--radius-md);
+  /* 不加底色、不加描边外框 —— 它是一枚印在纸上的记号，不是一个容器 */
+  border: none;
+  background: transparent;
   isolation: isolate;
   flex: 0 0 auto;
 }
 
-/* 大卡图形更高，才能与整卡文字等高；紧凑卡压成一条横带 */
+/* 大卡：标记放在标题左侧，尺寸固定，不跟着卡片拉伸 */
 .project__figure--lg {
-  aspect-ratio: 16 / 7;
-  min-height: 12rem;
+  width: 5.5rem;
+  height: 5.5rem;
 }
 
 .project__figure--sm {
-  aspect-ratio: 16 / 5;
-  min-height: 6.5rem;
+  width: 3.25rem;
+  height: 3.25rem;
 }
 
 .project__shape {
@@ -339,223 +341,20 @@
   pointer-events: none;
 }
 
-/* 主形状统一用低不透明度上色，避免五颜六色的噪点感 */
-.project__shape--a {
-  opacity: 0.9;
-}
-
+/* 统一用描边色，低不透明度；形状之间靠几何区分，不靠颜色堆叠 */
+.project__shape--a,
 .project__shape--b {
-  opacity: 0.5;
+  color: var(--project-accent, var(--accent));
+  opacity: 0.85;
 }
 
+/* 第三层（原光晕）在新方案里没有位置 —— 光晕是渐变装饰的本体，
+   直接不渲染。保留选择器是为了让旧的 JSX 结构不必改。 */
 .project__shape--c {
-  /* 光晕：只负责纵深，不负责形状 */
-  inset: -30%;
-  background: radial-gradient(
-    closest-side,
-    var(--project-accent, var(--accent)),
-    transparent 70%
-  );
-  filter: blur(var(--blur-card));
-  opacity: 0.34;
-  mix-blend-mode: screen;
+  display: none;
 }
 
-:root[data-theme='light'] .project__shape--c {
-  /* 浅色下 screen 会洗白，改用 multiply 才有层次 */
-  mix-blend-mode: multiply;
-  opacity: 0.22;
-}
-
-/* 图形随指针高光一起"活着"：进度展开时轻微放大并提亮（§1 反馈连续） */
-.project__figure {
-  transition: filter var(--dur-slow) var(--ease-out),
-    opacity var(--dur-slow) var(--ease-out);
-  filter: saturate(90%);
-}
-
-.project:hover .project__figure {
-  filter: saturate(115%);
-}
-
-/* ① nodes —— 四个职责单一的 Agent 互相校验：节点 + 连线 + 一个被否决的回环。
-   网格与描线全部由 --project-grid / --hairline 推导，几何随令牌缩放。 */
-.project__figure--nodes .project__shape--a {
-  inset: 0;
-  background-image: radial-gradient(
-      circle at center,
-      var(--project-accent, var(--accent)) 0 var(--work-grid-dot),
-      transparent var(--work-grid-dot)
-    ),
-    linear-gradient(
-      to right,
-      var(--project-accent, var(--accent)) 0 var(--hairline),
-      transparent var(--hairline)
-    ),
-    linear-gradient(
-      to bottom,
-      var(--project-accent, var(--accent)) 0 var(--hairline),
-      transparent var(--hairline)
-    );
-  background-size: var(--work-grid-cell) var(--work-grid-cell),
-    var(--work-grid-cell) var(--work-grid-cell), var(--work-grid-cell) var(--work-grid-cell);
-  background-position: center;
-  opacity: 0.75;
-}
-
-/* 结构层：一个偏移的方框，读作"质检打回上一环节"的回环 */
-.project__figure--nodes .project__shape--b {
-  left: 22%;
-  top: 16%;
-  width: 56%;
-  height: 68%;
-  border: 1px solid var(--project-accent, var(--accent));
-  border-radius: var(--radius-sm);
-  background: linear-gradient(
-    135deg,
-    transparent 40%,
-    var(--project-accent, var(--accent)) 40% 41%,
-    transparent 41%
-  );
-}
-
-/* ② grid —— 12 大板块、100+ 字段：模组化的方格阵列，其中一格是"实心出口" */
-.project__figure--grid .project__shape--a {
-  inset: 12% 8%;
-  background-image: repeating-linear-gradient(
-      to right,
-      var(--project-accent, var(--accent)) 0 var(--work-line),
-      transparent var(--work-line) var(--work-module-col)
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      var(--project-accent, var(--accent)) 0 var(--work-line),
-      transparent var(--work-line) var(--work-module-row)
-    );
-  opacity: 0.6;
-}
-
-/* 结构层：被点亮的那个"唯一出口"模组 */
-.project__figure--grid .project__shape--b {
-  left: 8%;
-  top: 25%;
-  width: var(--work-module-col);
-  height: var(--work-module-row);
-  background: var(--project-accent, var(--accent));
-  border-radius: var(--radius-xs);
-  transform: translate3d(calc(100% * 4), 0, 0);
-  opacity: 0.85;
-}
-
-/* ③ pipeline —— 五段链路依次推进：五级阶梯 + 一条贯通线 */
-.project__figure--pipeline .project__shape--a {
-  left: 10%;
-  right: 10%;
-  bottom: 22%;
-  height: var(--hairline);
-  background: var(--project-accent, var(--accent));
-  opacity: 0.55;
-}
-
-/* 阶梯用重复渐变造五级，每级抬高一档；档高由 --project-step 统一推导，
-   与 clip-path 的五级坐标一一对应（5 级 × 20%）。 */
-.project__figure--pipeline .project__shape--b {
-  --project-step: 20%;
-  left: 12%;
-  right: 12%;
-  bottom: 22%;
-  height: 62%;
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--project-accent, var(--accent)) 0 6%,
-    transparent 6% 20%
-  );
-  -webkit-mask-image: linear-gradient(
-    to top,
-    #000 0%,
-    #000 var(--project-step),
-    transparent var(--project-step),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to top,
-    #000 0%,
-    #000 var(--project-step),
-    transparent var(--project-step),
-    transparent 100%
-  );
-  opacity: 0.7;
-  /* clip-path 把方块削成五级阶梯：纯几何、无图片。
-     最后两级顶到 0 与 12%，读作"链路末端收束"。 */
-  clip-path: polygon(
-    0 100%,
-    0 62%,
-    var(--project-step) 62%,
-    var(--project-step) 44%,
-    calc(var(--project-step) * 2) 44%,
-    calc(var(--project-step) * 2) 26%,
-    calc(var(--project-step) * 3) 26%,
-    calc(var(--project-step) * 3) 12%,
-    calc(var(--project-step) * 4) 12%,
-    calc(var(--project-step) * 4) 0,
-    100% 0,
-    100% 100%
-  );
-}
-
-/* ④ bars —— 排期与节奏：一列疏密变化的竖条（每日 21 词 + 1 篇阅读） */
-.project__figure--bars .project__shape--a {
-  inset: 18% 8%;
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--project-accent, var(--accent)) 0 var(--work-bar-w),
-    transparent var(--work-bar-w) var(--work-bar-pitch)
-  );
-  opacity: 0.7;
-  /* 顶部渐隐，做出"波形"的起伏而不是齐刷刷一排 */
-  -webkit-mask-image: radial-gradient(
-    140% 120% at 30% 0%,
-    #000 30%,
-    transparent 78%
-  );
-  mask-image: radial-gradient(140% 120% at 30% 0%, #000 30%, transparent 78%);
-}
-
-.project__figure--bars .project__shape--b {
-  left: 8%;
-  right: 8%;
-  top: 50%;
-  height: var(--hairline);
-  background: var(--project-accent, var(--accent));
-  opacity: 0.45;
-}
-
-/* ⑤ rings —— 每日归档回库：同心环，一圈一圈往中心收 */
-.project__figure--rings .project__shape--a {
-  inset: 8%;
-  border-radius: var(--radius-pill);
-  background: repeating-radial-gradient(
-    circle at 50% 50%,
-    var(--project-accent, var(--accent)) 0 var(--work-line),
-    transparent var(--work-line) var(--work-module-col)
-  );
-  opacity: 0.75;
-}
-
-.project__figure--rings .project__shape--b {
-  left: 50%;
-  top: 50%;
-  width: 18%;
-  aspect-ratio: 1;
-  border-radius: var(--radius-pill);
-  background: var(--project-accent, var(--accent));
-  /* 用百分比位移居中：不依赖固定尺寸，缩放时始终在圆心 */
-  transform: translate3d(-50%, -50%, 0);
-  opacity: 0.85;
-}
-
-/* 图形整体做一次极缓的呼吸（远低于 0.2Hz 闪烁阈值），
-   位移/缩放乘以 --motion-scale，降低动态时自动归零。 */
+/* 呼吸动效保留，但幅度更小：它是"活着的记号"，不是浮动的主视觉 */
 .project__shape--b {
   animation: project-breathe 9s var(--ease-in-out) infinite alternate;
 }
@@ -565,20 +364,111 @@
     transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translate3d(0, calc(-0.5rem * var(--motion-scale)), 0);
+    transform: translate3d(0, calc(-0.28rem * var(--motion-scale)), 0);
   }
 }
 
-/* --b 各自需要保留的定位 transform 会与呼吸动画打架，
-   所以把有定位需求的几何放在 --b 上时，用 --a 承载动画 -->
-.project__figure--grid .project__shape--b,
-.project__figure--rings .project__shape--b {
-  animation: none;
+/* 各图形改为描边几何 —— 用 currentColor + mask，避免逐项目写死色值 */
+
+/* ① nodes —— 四个节点 + 连线（四 Agent 互相校验） */
+.project__figure--nodes .project__shape--a {
+  inset: 14%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  opacity: 0.9;
 }
 
-.project__figure--grid .project__shape--a,
+.project__figure--nodes .project__shape--b {
+  inset: 30%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(currentColor, currentColor) center / 1.5px 50% no-repeat,
+    linear-gradient(currentColor, currentColor) center / 50% 1.5px no-repeat;
+  opacity: 0.7;
+}
+
+/* ② grid —— 模组化方格阵列，其中一格实心 */
+.project__figure--grid .project__shape--a {
+  inset: 14%;
+  background-image: linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  background-size: 33.33% 33.33%;
+  opacity: 0.55;
+}
+
+.project__figure--grid .project__shape--b {
+  left: 47%;
+  top: 47%;
+  width: 20%;
+  height: 20%;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+/* ③ pipeline —— 五级阶梯 + 一条贯通基线 */
+.project__figure--pipeline .project__shape--a {
+  left: 12%;
+  right: 12%;
+  bottom: 26%;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.project__figure--pipeline .project__shape--b {
+  left: 12%;
+  right: 12%;
+  bottom: 26%;
+  height: 58%;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 1.5px,
+    transparent 1.5px 20%
+  );
+  mask-image: linear-gradient(to top, #000 0 12%, transparent 12% 24%, #000 24% 36%,
+    transparent 36% 48%, #000 48% 60%, transparent 60% 72%, #000 72% 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 0 12%, transparent 12% 24%,
+    #000 24% 36%, transparent 36% 48%, #000 48% 60%, transparent 60% 72%, #000 72% 100%);
+  opacity: 0.85;
+}
+
+/* ④ bars —— 疏密变化的竖条（排期节奏） */
+.project__figure--bars .project__shape--a {
+  left: 14%;
+  right: 14%;
+  top: 18%;
+  bottom: 18%;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 2px,
+    transparent 2px 14%
+  );
+  opacity: 0.8;
+}
+
+.project__figure--bars .project__shape--b {
+  left: 14%;
+  right: 14%;
+  bottom: 24%;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+/* ⑤ rings —— 同心环（归档回库） */
 .project__figure--rings .project__shape--a {
-  animation: project-breathe 9s var(--ease-in-out) infinite alternate;
+  inset: 12%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  opacity: 0.85;
+}
+
+.project__figure--rings .project__shape--b {
+  inset: 32%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  opacity: 0.6;
 }
 
 /* ============================================================================
@@ -705,4 +595,49 @@
   .project__foot {
     justify-content: stretch;
   }
+}
+
+/* ============================================================================
+   方向 A 修正：项目不做成「盒子」，做成「条目」
+
+   问题：把玻璃换成白底面板后，大卡变成一整块白色平板（白底压在近白页面上），
+   内容浮在里面，卡片本身不承担任何信息 —— 这正是要改掉的「卡片套卡片」。
+
+   改法：项目退化成有编号的档案条目，条目之间用一条细线分隔，
+   与首屏的装订线同一套语汇。大卡不再有底色与四周描边，只保留上下分隔线。
+   交互反馈（上浮）随之取消 —— 条目不应该整块浮起来，那还在暗示"我是卡片"。
+   ========================================================================= */
+
+/* 条目化：去掉圆角边框，改为上下细线 */
+.project {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--divider);
+  border-radius: 0;
+  /* 与首屏 .container 左缘对齐，让页面上所有内容共用同一根版心线 */
+  padding: var(--space-6) 0;
+}
+
+/* 最后一个条目补下边线，让整组条目首尾都有界 */
+.work__item:last-child .project {
+  border-bottom: 1px solid var(--divider);
+}
+
+@media (min-width: 62rem) {
+  .project--lead {
+    padding: var(--space-7) 0;
+  }
+}
+
+/* 取消整块上浮：条目不是卡片，不应有"悬浮"暗示。
+   按下反馈保留（pointer-down 立刻响应，Apple §1），但它只作用于内部按钮。 */
+.project.panel-card--interactive:hover,
+.project.panel-card--interactive:active {
+  transform: none;
+  border-color: var(--divider);
+}
+
+/* 指针跟随高光对条目也不合适（整块发光会破坏纸面感），关掉 */
+.project.panel-glow::after {
+  display: none;
 }

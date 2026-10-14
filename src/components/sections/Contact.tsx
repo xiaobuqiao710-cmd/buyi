@@ -8,7 +8,7 @@
  * 注意：公开页只在 PROFILE.email —— 不放电话号码（用户明确要求）。
  */
 import { PROFILE } from '../../data/content'
-import { Reveal, LinkButton, GlassCard } from '../ui/Kit'
+import { Reveal, LinkButton, PanelCard } from '../ui/Kit'
 
 const MAILTO = `mailto:${PROFILE.email}?subject=${encodeURIComponent(
   '看到你的个人主页，想聊聊',
@@ -19,7 +19,7 @@ export function Contact() {
     <section id="contact" className="section contact" aria-labelledby="contact-title">
       <div className="container">
         <Reveal className="contact__panel">
-          <GlassCard thickness="thick" radius="xl" className="contact__card">
+          <PanelCard radius="xl" className="contact__card">
             <div className="contact__inner">
               <p className="label">联系</p>
 
@@ -66,7 +66,7 @@ export function Contact() {
                 </div>
               </dl>
             </div>
-          </GlassCard>
+          </PanelCard>
         </Reveal>
       </div>
     </section>

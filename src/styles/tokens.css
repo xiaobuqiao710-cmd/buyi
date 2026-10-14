@@ -148,6 +148,12 @@
   --grid-line: rgba(255, 255, 255, 0.038);
   --grid-size: 88px;
 
+  /* 内容面板的底色：比页面底稍微亮一档，靠这点差值 + 一道细边建立层次，
+     不用模糊也不用投影。深色下用极低不透明度的白，浅色下用纯白。 */
+  --surface-panel: rgba(255, 255, 255, 0.032);
+  /* 面板 hover 时指针跟随的暖光，必须极淡（约 5%），否则又变成发光装饰 */
+  --glow-tint: rgba(120, 150, 255, 0.07);
+
   /* 玻璃材质 —— 三层：底色 + 高光顶边 + 描边 */
   --glass-bg: rgba(255, 255, 255, 0.055);
   --glass-bg-strong: rgba(255, 255, 255, 0.085);
@@ -205,6 +211,9 @@
 
   --grid-line: rgba(18, 18, 26, 0.045);
   --grid-size: 88px;
+
+  --surface-panel: #ffffff;
+  --glow-tint: rgba(60, 90, 200, 0.05);
 
   --glass-bg: rgba(255, 255, 255, 0.62);
   --glass-bg-strong: rgba(255, 255, 255, 0.78);
@@ -271,6 +280,7 @@
     --blur-card: 0px;
     --blur-chrome: 0px;
     --blur-hero: 0px;
+    --surface-panel: #14141c;
   }
   :root[data-theme='light'] {
     --glass-bg: rgba(255, 255, 255, 0.98);
@@ -282,6 +292,7 @@
     --blur-card: 0px;
     --blur-chrome: 0px;
     --blur-hero: 0px;
+    --surface-panel: #ffffff;
   }
 }
 
