@@ -147,13 +147,29 @@ BASE_PATH=/buyi/ npm run build
 
 ### 仓库初始化（首次）
 
+**首选：跑部署脚本**（把登录之后的动作都固化了，不必记参数）：
+
 ```bash
-gh auth login                      # 需要先登录
-git add -A && git commit -m "feat: 个人主页站点"
+gh auth login          # 一次性，必须由人完成
+bash scripts/deploy.sh # 默认仓库名 buyi；也可 bash scripts/deploy.sh 其他名字
+```
+
+脚本会依次：校验登录 → 校验工作区干净 → 校验必需文件（含简历 PDF）→
+本地 `tsc -b` + `npm run build` 先证明能构建 → 建仓并推送 →
+打印 Pages 开关命令与站点地址。任一步失败都会停下并说明原因。
+
+**手动等价操作**：
+
+```bash
 gh repo create buyi --public --source=. --push
 ```
 
-然后在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
+然后在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**
+（或 `gh api -X POST repos/<用户名>/buyi/pages -f build_type=workflow`）。
+
+**为什么需要人登录一次**：本机不存在任何可用 GitHub 凭证
+（`gh` 未登录、无 `GH_TOKEN`、无 SSH 密钥、无 credential helper），
+所以这一步无法自动化 —— 但登录之后的所有动作都已固化进脚本。
 
 ---
 
