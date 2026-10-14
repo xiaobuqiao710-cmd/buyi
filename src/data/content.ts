@@ -126,6 +126,11 @@ export const PROJECTS: Project[] = [
       { value: '4', label: '段逐一过质检' },
     ],
     tech: ['Claude Code', 'Codex', '多智能体编排', '结构化消息协议', 'Prompt 工程'],
+    shot: {
+      src: 'shots/bse-desk.jpg',
+      caption:
+        '以「北交所法律岗」为例的考情作战台：把官方招聘信息结构化，并把岗位职责逐条映射到命题考点。',
+    },
     featured: 1,
   },
   {
@@ -212,6 +217,11 @@ export const PROJECTS: Project[] = [
       { value: '16', label: '讲语法' },
     ],
     tech: ['Python', '静态站点生成', '数据驱动排期', 'SMTP 推送', '离线优先'],
+    shot: {
+      src: 'shots/english-desk.jpg',
+      caption:
+        '离线单页作战台（双击即开，不需联网）：当日词汇带词性、释义与搭配例句，顶部固定显示进度与剩余天数。',
+    },
     featured: 4,
   },
   {
