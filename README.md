@@ -94,25 +94,38 @@ npm run dev        # http://localhost:5180
 | `npm run build` | 类型检查 + 生产构建到 `dist/` |
 | `npm run preview` | 预览构建产物（端口 4180） |
 | `npm run typecheck` | 只跑 `tsc -b` |
-| `npm run qa` | 真实浏览器渲染 QA（见下） |
+| `npm run qa` | 渲染 QA：对比度 + 结构/ARIA/溢出 |
+| `npm run qa:type` | 排版 QA：中文行宽/行高/字号
+| `npm run qa:all` | 上面两支一起跑 |
 
 ---
 
 ## 渲染 QA
 
-`scripts/qa-render.mjs` 用 CDP 驱动**真实 Chrome**，不引入 Puppeteer 之类的依赖。
-每次运行产出 15 项 WCAG 对比度检查 + 结构/ARIA/溢出检查，任一不达标即以非零码退出：
+两支脚本都用 CDP 驱动**真实 Chrome**，不引入 Puppeteer 之类的依赖。
+任一检查不达标即以非零码退出，所以可以直接当提交前的闸门用。
 
 ```bash
 npm run preview &            # 先起一个本地服务
-node scripts/qa-render.mjs http://localhost:4180/ --shots
+npm run qa                   # 对比度（15 项 WCAG）+ 结构/ARIA/溢出
+npm run qa:type              # 中文排版（行宽/行高/字号）
+npm run qa -- --shots        # 额外把截图写到 .qa-shots/（已 gitignore）
 ```
 
-`--shots` 会把截图写到 `.qa-shots/`（已 gitignore）。
+**这两个脚本是验证过的闸门，不是安慰剂。** 往 `src/styles/tokens.css` 里注入故障
+实测过它们的反应：把浅色主题的 `--text-primary` 改成 `#d8d8e0`，对比度脚本报出
+7 处不足（含 `hero__title` 1.33:1）并额外指出「主题自相矛盾」；
+把 `--leading-body` 改成 `1.02`，排版脚本报出 5 处正文行高过紧。两者都退出码 1。
 
 **一个必须知道的坑**：headless Chrome 的 `--virtual-time-budget` **不推进 CSS 动画时钟**，
 入场动画会永久停在 `opacity: 0`。直接截图会得到"空白页面"的假象——
 这不是页面坏了。QA 脚本为此在截图前显式把动画推进到终态。
+
+**另一个坑（构建产物不能混用）**：`BASE_PATH` 不同的两份 `dist` 不可互换——
+不带 `BASE_PATH` 构建出的产物引用 `/assets/…`，带 `BASE_PATH=/buyi/` 的引用 `/buyi/assets/…`。
+拿后者用根路径服务器打开会整页 404，症状是"`#root` 为空、主内容过少"，
+很容易被误读成组件坏了。两支 QA 脚本都会先读 `dist/index.html` 里实际的资源前缀，
+与被测 URL 比对，不一致就直接退出并打印该敲的命令。
 
 ---
 
