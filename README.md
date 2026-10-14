@@ -209,3 +209,19 @@ src/
 因此 `qa-render.mjs` 与 `qa-typography.mjs` 都会先读 `dist/index.html` 里资源的
 实际前缀，与被测 URL 的路径比对；不一致就直接退出（退出码 2）并打印该敲的命令，
 而不是产出一堆误导性的失败项。
+
+### 无障碍三降级的实测值
+
+三条降级都用 `Emulation.setEmulatedMedia` 强制媒体特性后读过 computed style，
+不是"写了就算"（其中一条曾因 CSS 覆盖而静默失效，见下）：
+
+| 媒体特性 | 实测变化（深色主题） |
+| --- | --- |
+| `prefers-reduced-motion: reduce` | `--motion-scale` `1 → 0`（位移归零、只留淡入）、`--dur-base` `.22s → .12s` |
+| `prefers-reduced-transparency: reduce` | `--surface-panel` `rgba(255,255,255,.032) → #14141c`、`--blur-chrome` `34px → 0px`、`--glass-bg` 变近乎不透明 |
+| `prefers-contrast: more` | `--divider` `.08 → .3`（3.75×）、`--text-primary` `#f5f5f7 → #ffffff`、`--accent` 加深 |
+
+**踩过的坑**：`--motion-scale` 的默认值一度同时声明在 `tokens.css` 与 `base.css`。
+`base.css` 后加载，两处选择器同为 `:root`（特异性相同），无条件的那条永远获胜，
+于是 reduced-motion 块里的 `0` 被覆盖 —— 降级静默失效，位移照常发生。
+现在默认值只留在 `tokens.css`（唯一真源），并在 `base.css` 留注释说明为什么不能在那里声明。
