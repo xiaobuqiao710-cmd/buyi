@@ -1,0 +1,95 @@
+/* ============================================================================
+   contact.css — 结尾区块
+   这里是整页情绪落点：面板最厚（大面用更厚的材质），留白最大，动作最明确。
+   ========================================================================= */
+
+.contact {
+  padding-bottom: clamp(5rem, 12vw, 9rem);
+}
+
+.contact__panel {
+  max-width: 56rem;
+  margin-inline: auto;
+}
+
+/* 结尾卡片是"大面"→ 用厚材质（Apple §12：面积越大，材质越厚） */
+.contact__card {
+  padding: clamp(2rem, 5vw, 4rem);
+}
+
+.contact__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+
+.contact__title {
+  font-size: var(--text-h1);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-h1);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  max-width: 20ch;
+  text-wrap: balance;
+}
+
+.contact__lead {
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.contact__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* 关键信息用一条细线分隔，避免再加一层玻璃（禁止浅玻璃叠浅玻璃） */
+.contact__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-7);
+  margin: var(--space-4) 0 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--divider);
+  width: 100%;
+}
+
+.contact__fact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contact__fact dt {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-quaternary);
+}
+
+.contact__fact dd {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .contact__actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .contact__actions .btn {
+    width: 100%;
+  }
+
+  .contact__facts {
+    gap: var(--space-4) var(--space-6);
+  }
+}

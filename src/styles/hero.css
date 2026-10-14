@@ -1,0 +1,384 @@
+/* ============================================================================
+   hero.css — 首屏（Co-located CSS）
+   所有颜色 / 间距 / 圆角 / 时长 / 模糊半径均来自 tokens.css，无裸值。
+   动画只动 transform / opacity / filter —— 不碰 width/height/top/left。
+
+   入场策略：**挂载即播放的 CSS animation**，不用 IntersectionObserver。
+   首屏绝不允许出现空白；即使脚本报错，animation 也会自行播放到终态。
+   ========================================================================= */
+
+.hero {
+  position: relative;
+  /* 顶部让开玻璃导航；底部多留一段给滚动提示 */
+  padding-top: calc(var(--hit-min) + var(--space-8));
+  padding-bottom: var(--section-y);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: clip; /* 只裁裁切，不建立滚动容器；不改变布局计算 */
+}
+
+.hero__inner {
+  position: relative;
+  z-index: var(--z-raised); /* 文字与玻璃在装饰层之上 */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+/* 宽屏：左文右玻璃，主视觉不抢标题的第一眼 */
+@media (min-width: 62rem) {
+  .hero__inner {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: var(--space-9);
+  }
+}
+
+.hero__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0; /* 允许在窄容器里收缩，防止长英文撑破网格 */
+}
+
+/* ------------------------------------------------------------ 文字层级 */
+
+.hero__eyebrow {
+  color: var(--text-tertiary);
+}
+
+.hero__title {
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+  /* 字距随字号收紧 —— 大字号用 display 级负字距（Apple §15） */
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--weight-bold);
+}
+
+.hero__headline {
+  font-size: var(--text-h3);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-h3);
+  font-weight: var(--weight-medium);
+  color: var(--text-primary);
+}
+
+.hero__intro {
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-body); /* 正文字距接近 0 */
+  color: var(--text-secondary);
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+/* ------------------------------------------------------------ 厚玻璃主视觉 */
+
+.hero__panel {
+  /* 只需覆盖间距与布局；材质本身由 .glass--thick 提供 */
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.hero__panel-label {
+  color: var(--text-tertiary);
+}
+
+.hero__panel-note {
+  font-size: var(--text-xs);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-tertiary);
+  /* 用一条上分隔线代替嵌套玻璃面（浅玻璃叠浅玻璃会让可读性崩） */
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+
+/* ------------------------------------------------------------ 装饰层 */
+
+.hero__decor {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-base);
+  pointer-events: none;
+  /* 装饰层整体压低不透明度，避免与 body 光斑打架 */
+  opacity: var(--aura-opacity);
+}
+
+/* 抽象光斑：用 --aura-* + 模糊 + 混合模式做"折射"，
+   位移由 useParallax 写 transform / --parallax-y。
+   will-change 只在会动的层上给。 */
+.hero__aura {
+  position: absolute;
+  top: -12%;
+  right: -8%;
+  width: min(48rem, 82vw);
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background:
+    radial-gradient(closest-side, var(--aura-1), transparent 72%),
+    radial-gradient(closest-side at 68% 34%, var(--aura-2), transparent 70%);
+  filter: blur(var(--blur-hero)) saturate(var(--saturate-glass));
+  mix-blend-mode: screen;
+  opacity: 0.72;
+  will-change: transform;
+  transform: translate3d(0, var(--parallax-y, 0px), 0);
+}
+
+:root[data-theme='light'] .hero__aura {
+  /* 浅色下 screen 会洗白，改用 multiply 才有"折射"的层次 */
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+/* 细网格：给玻璃一点可折射的结构，纯 CSS，不用外部图片 */
+.hero__grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(to right, var(--divider) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--divider) 1px, transparent 1px);
+  background-size: var(--space-8) var(--space-8);
+  /* 边缘淡出，不做成一张硬边贴图 */
+  -webkit-mask-image: radial-gradient(120% 90% at 50% 30%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(120% 90% at 50% 30%, #000 0%, transparent 78%);
+  opacity: 0.5;
+  will-change: transform;
+  transform: translate3d(0, var(--parallax-y, 0px), 0);
+}
+
+/* 第三个光斑：底部一侧的青绿色，让整块玻璃前后有纵深 */
+.hero__decor::after {
+  content: '';
+  position: absolute;
+  left: -10%;
+  bottom: -18%;
+  width: min(36rem, 70vw);
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(closest-side, var(--aura-3), transparent 70%);
+  filter: blur(var(--blur-chrome)) saturate(var(--saturate-glass));
+  mix-blend-mode: screen;
+  opacity: 0.55;
+}
+
+:root[data-theme='light'] .hero__decor::after {
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+}
+
+/* ------------------------------------------------------------ 向下滚动提示 */
+
+.hero__scroll {
+  position: relative;
+  z-index: var(--z-raised);
+  align-self: center;
+  margin-top: var(--space-8);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  color: var(--text-tertiary);
+  transition: color var(--dur-base) var(--ease-out),
+    background-color var(--dur-base) var(--ease-out);
+}
+
+.hero__scroll:hover {
+  color: var(--text-secondary);
+  background: var(--glass-bg-subtle);
+}
+
+/* 按下即反馈（Apple §1），与 .btn 同一套手感 */
+.hero__scroll:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-instant);
+}
+
+.hero__scroll-text {
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.hero__scroll-icon {
+  display: inline-flex;
+  /* 极缓的上下呼吸，提示"这里可以往下"；位移乘以 --motion-scale */
+  animation: hero-nudge 2.4s var(--ease-in-out) infinite;
+}
+
+@keyframes hero-nudge {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, calc(0.22rem * var(--motion-scale)), 0);
+  }
+}
+
+/* ============================================================================
+   入场：挂载即播放。
+   为什么用 CSS animation 而不是 .reveal + IntersectionObserver ——
+   首屏在视口内，观察者回调晚于首帧，用户会先看到一帧空白。
+   这里用 animation-delay 做错落，终态由 fill-mode: both 保证。
+   ========================================================================= */
+
+.hero [data-enter] {
+  animation: hero-enter var(--dur-deliberate) var(--ease-out) both;
+  animation-delay: calc(var(--enter-index) * var(--dur-fast));
+}
+
+/* 错落节奏：文字逐级，玻璃面板最后材质化出现 */
+.hero [data-enter='0'] {
+  --enter-index: 0;
+}
+.hero [data-enter='1'] {
+  --enter-index: 1;
+}
+.hero [data-enter='2'] {
+  --enter-index: 2;
+}
+.hero [data-enter='3'] {
+  --enter-index: 3;
+}
+.hero [data-enter='4'] {
+  --enter-index: 4;
+}
+.hero [data-enter='5'] {
+  --enter-index: 5;
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    /* 位移乘以 --motion-scale：降低动态时从"上浮"退化为纯淡入 */
+    transform: translate3d(0, calc(1.25rem * var(--motion-scale)), 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* 玻璃面板单独一条：blur 与 scale 同动 = "材质化出现"（Apple §12），
+   而不是一层不透明度淡入。 */
+.hero__panel[data-enter] {
+  animation-name: hero-materialize;
+}
+
+@keyframes hero-materialize {
+  from {
+    opacity: 0;
+    transform: scale(calc(1 - 0.04 * var(--motion-scale)));
+    -webkit-backdrop-filter: blur(0px) saturate(var(--saturate-glass));
+    backdrop-filter: blur(0px) saturate(var(--saturate-glass));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    -webkit-backdrop-filter: blur(var(--blur-card)) saturate(var(--saturate-glass));
+    backdrop-filter: blur(var(--blur-card)) saturate(var(--saturate-glass));
+  }
+}
+
+/* ============================================================================
+   无障碍降级 —— 三档都必须在组件层有明确回应
+   ========================================================================= */
+
+/* ① 降低动态：不删反馈，换成静态呈现 + 极短淡入。
+      位移随 --motion-scale 归零，这里只需把时长压回令牌的缩短值。 */
+@media (prefers-reduced-motion: reduce) {
+  .hero [data-enter] {
+    animation-duration: var(--dur-base);
+  }
+  .hero__scroll-icon {
+    animation: none;
+  }
+  .hero__aura,
+  .hero__grid {
+    /* 视差 Hook 已归零，这里去掉合成层提示，避免白占显存 */
+    will-change: auto;
+  }
+}
+
+/* ② 降低透明度：令牌已把 --blur-* 归零、光斑关掉。
+      额外去掉 mix-blend-mode —— 实背景下混合模式只会把颜色搅脏。 */
+@media (prefers-reduced-transparency: reduce) {
+  .hero__aura,
+  .hero__decor::after {
+    mix-blend-mode: normal;
+    filter: none;
+    opacity: 0.35;
+  }
+  .hero__grid {
+    opacity: 0.3;
+  }
+  /* 厚玻璃变实底后，内部分隔线要更明确才读得出层次 */
+  .hero__panel-note {
+    border-top-color: var(--divider-strong);
+  }
+}
+
+/* ③ 提高对比：实底 + 明确描边 + 装饰层退出。
+      contrast:more 下阴影不再承担层次（tokens 已把 --shadow-glass 设为 none），
+      所以这里把面板描边交给令牌的强描边值，并彻底停掉光斑。 */
+@media (prefers-contrast: more) {
+  .hero__decor {
+    display: none;
+  }
+  .hero__panel {
+    border-color: var(--glass-border-strong);
+  }
+  .hero__intro,
+  .hero__eyebrow,
+  .hero__panel-note {
+    color: var(--text-secondary);
+  }
+  .hero__scroll {
+    color: var(--text-secondary);
+  }
+}
+
+/* 打印：首屏只留内容，去掉所有光效与动效 */
+@media print {
+  .hero {
+    min-height: 0;
+    padding-block: var(--space-6);
+  }
+  .hero__decor,
+  .hero__scroll {
+    display: none;
+  }
+  .hero [data-enter] {
+    animation: none;
+  }
+  .hero__panel {
+    border: 1px solid currentColor;
+    box-shadow: none;
+  }
+}
+
+/* 极窄屏（320px）兜底：CTA 满宽、玻璃面板内边距收紧，不出现横向溢出 */
+@media (max-width: 26rem) {
+  .hero__cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero__cta > * {
+    width: 100%;
+  }
+  .hero__panel {
+    padding: var(--space-5);
+  }
+}

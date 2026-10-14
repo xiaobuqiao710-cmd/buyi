@@ -1,0 +1,192 @@
+/* ============================================================================
+   components.css — 共享原语样式（按钮 / 区块头 / 指标 / 卡片内部）
+   全部值来自 tokens.css。组件专属布局放各自的区块文件里（用 Co-located CSS）。
+   ========================================================================= */
+
+/* ------------------------------------------------------------ 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--hit-min);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--tracking-sm);
+  white-space: nowrap;
+  position: relative;
+  isolation: isolate;
+  transition: background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    transform var(--dur-instant) var(--ease-out);
+}
+
+.btn__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* 主按钮：实底强调。反馈必须在 pointer-down 立刻出现 */
+.btn--primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--primary:hover {
+  background: var(--accent-hover);
+  box-shadow: var(--shadow-md);
+}
+
+/* 玻璃按钮：与材质系统同源 */
+.btn--glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--blur-chip)) saturate(var(--saturate-glass));
+  backdrop-filter: blur(var(--blur-chip)) saturate(var(--saturate-glass));
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn--glass:hover {
+  background: var(--glass-bg-strong);
+  border-color: var(--glass-border-strong);
+}
+
+.btn--ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+}
+
+.btn--ghost:hover {
+  background: var(--glass-bg-subtle);
+  color: var(--text-primary);
+}
+
+/* 按下即反馈（Apple §1：等 click 才给反馈 = 手感死掉） */
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--sm {
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (hover: none) {
+  .btn:active {
+    transform: scale(0.97);
+  }
+}
+
+/* ------------------------------------------------------------ 区块头 */
+.section__head {
+  margin-bottom: var(--space-7);
+}
+
+.section__title {
+  margin-top: var(--space-3);
+  max-width: 22ch;
+}
+
+.section__lead {
+  margin-top: var(--space-4);
+  font-size: var(--text-body-lg);
+  line-height: var(--leading-body);
+  color: var(--text-secondary);
+}
+
+/* ------------------------------------------------------------ 指标 */
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6) var(--space-7);
+  margin: 0;
+}
+
+.metrics__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 4.5rem;
+}
+
+.metrics__value {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: var(--weight-semibold);
+  line-height: 1.05;
+  letter-spacing: var(--tracking-h2);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.metrics__label {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-tertiary);
+}
+
+/* ------------------------------------------------------------ 通用列表 */
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bullets > li {
+  position: relative;
+  padding-left: var(--space-5);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+/* 用一条短横线代替圆点：更克制，也更符合信息密度的语气 */
+.bullets > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 0.5rem;
+  height: 1px;
+  background: var(--text-quaternary);
+}
+
+/* ------------------------------------------------------------ 芯片行 */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ------------------------------------------------------------ 网格 */
+.grid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.grid--2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+}
+
+.grid--3 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}

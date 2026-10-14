@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>方向 C · 聚光单件</title>
+<style>
+/* ============ 方向 C：聚光单件（手绘线稿） ============
+   引擎：一个具体场景 → 台灯下摊开的工作台，一件被单独打光的器物
+   骨架：居中单一物件（四周大面积留白，标题长在物件周围）
+   色彩：暖灰底 #F5F3EF / 深灰字 #22201D / 墨绿 #2E4A3F / 赭石 #B4552B
+   字体：系统黑体中黑做标题，字重对比中等；手写感只用于极少处批注
+   主视觉：手工 SVG 线稿（法律天平 × 代码括号 的融合器物）
+========================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#F5F3EF;color:#22201D;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;font-synthesis-weight:none;
+}
+.page{min-height:100vh;display:flex;flex-direction:column;padding:0 5vw;max-width:1500px;margin:0 auto}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding:30px 0;font-size:13px}
+.top__name{font-weight:700;letter-spacing:.02em}
+.top__nav{display:flex;gap:28px;color:#5E5B54}
+.top__nav a{color:inherit;text-decoration:none}
+
+/* 居中单一物件：这一屏唯一的「主角」 */
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2vh 0 6vh;position:relative}
+.mark{width:min(38vw,340px);height:auto;margin-bottom:6px}
+
+h1{font-size:clamp(38px,4.6vw,60px);font-weight:600;letter-spacing:-.02em;line-height:1.16;margin-bottom:20px}
+h1 .accent{color:#2E4A3F}
+.claim{font-size:16.5px;line-height:1.85;color:#4A463F;max-width:34em;margin:0 auto}
+.claim .u{border-bottom:1.5px solid #B4552B;padding-bottom:1px;color:#22201D;font-weight:600}
+
+/* 手写感批注：全页唯一「有趣」的元素 */
+.note{position:absolute;font-size:14px;color:#B4552B;letter-spacing:.02em;
+  font-family:"Xingkai SC","STXingkai","Kaiti SC",cursive}
+.note--l{left:6%;top:22%;transform:rotate(-6deg)}
+.note--r{right:7%;bottom:26%;transform:rotate(4deg)}
+.note svg{display:block;margin-top:4px}
+
+.acts{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap;justify-content:center}
+.b{display:inline-flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;
+  text-decoration:none;padding:13px 26px;border-radius:8px}
+.b--solid{background:#2E4A3F;color:#F5F3EF}
+.b--out{color:#22201D;border:1.5px solid #CFC9BE;background:transparent}
+.b--t{color:#B4552B;padding:13px 6px}
+
+/* 底部三栏：像工作台上一字排开的三样工具 */
+.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:44px;padding:34px 0 56px;
+  border-top:1px solid #DFD9CE}
+.it__n{font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.it__l{font-size:13px;color:#6E6A62;margin-top:8px;line-height:1.6}
+.it__l b{display:block;color:#22201D;font-size:13.5px;margin-bottom:4px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <div class="top__name">宋建豪</div>
+    <nav class="top__nav">
+      <a href="#">AI 项目</a><a href="#">法律经历</a><a href="#">教育荣誉</a><a href="#">联系</a>
+    </nav>
+  </div>
+
+  <div class="center">
+
+    <!-- 主视觉：手工线稿。法律天平 × 代码花括号，两件器物合成一件 -->
+    <svg class="mark" viewBox="0 0 340 250" fill="none" stroke="#2E4A3F"
+         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="法律天平与代码括号融合的线稿">
+      <!-- 花括号（左）作为天平的一个支点 -->
+      <path d="M52 34c-13 0-13 10-13 22s0 22-13 22 13 0 13 22 0 22 13 22" stroke="#B4552B"/>
+      <!-- 花括号（右） -->
+      <path d="M288 34c13 0 13 10 13 22s0 22 13 22-13 0-13 22 0 22-13 22" stroke="#B4552B"/>
+      <!-- 立柱 -->
+      <path d="M170 46v132"/>
+      <path d="M144 178h52"/>
+      <circle cx="170" cy="40" r="7"/>
+      <!-- 横梁（略微倾斜，像真的在称量） -->
+      <path d="M96 78 244 70"/>
+      <!-- 左盘 + 吊绳 -->
+      <path d="M96 78v14M74 92h44M74 92c0 16 10 26 22 26s22-10 22-26"/>
+      <!-- 右盘 + 吊绳 -->
+      <path d="M244 70v16M222 86h44M222 86c0 16 10 26 22 26s22-10 22-26"/>
+      <!-- 右盘里放一枚代码符号，左盘里放一枚法条符号 -->
+      <path d="M152 108 141 119l11 11" stroke="#B4552B" stroke-width="2.4"/>
+      <path d="M188 108l11 11-11 11" stroke="#B4552B" stroke-width="2.4"/>
+      <path d="M163 105l-3 28" stroke="#B4552B" stroke-width="2"/>
+      <!-- 底座的横线，像纸上的基准线 -->
+      <path d="M112 196h116M128 208h84" stroke-opacity=".45"/>
+    </svg>
+
+    <h1>法律专业能力<span class="accent"> × </span>AI Agent 工程实践</h1>
+    <p class="claim">北京大学法律硕士（金融法）。在红圈与精品所的证券、IPO 项目里做检索与文书；同时把这条工作流拆开、<span class="u">重建成可复用的 AI Agent 系统</span>。</p>
+
+    <div class="note note--l">一边是条文<svg width="34" height="16"><path d="M2 3c8 10 20 10 30 4" stroke="#B4552B" fill="none" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+    <div class="note note--r">一边是代码<svg width="34" height="16"><path d="M32 3c-8 10-20 10-30 4" stroke="#B4552B" fill="none" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+
+    <div class="acts">
+      <a class="b b--solid" href="#">↓ 下载简历</a>
+      <a class="b b--out" href="#">查看 AI 项目</a>
+      <a class="b b--t" href="#">邮件联系 →</a>
+    </div>
+  </div>
+
+  <div class="shelf">
+    <div class="it"><div class="it__n">5</div><div class="it__l"><b>个 AI 项目</b>全部本人独立完成并已上线</div></div>
+    <div class="it"><div class="it__n">4</div><div class="it__l"><b>个专职 Agent</b>检索 · IRAC · 文书 · 质检</div></div>
+    <div class="it"><div class="it__n">5</div><div class="it__l"><b>条自动化链路</b>岗位采集到投递追踪</div></div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,324 @@
+/* ============================================================================
+   tokens.css — 设计令牌（唯一真源）
+   规则：任何颜色 / 尺寸 / 时长 / 层级 / 模糊半径都必须来自这里。
+   组件里出现裸值 = 违规。改视觉只改本文件。
+   ========================================================================= */
+
+:root {
+  /* ---------- 排版：字号阶梯（clamp 保证可缩放，尊重用户字号设置） ---------- */
+  --text-display: clamp(2.75rem, 7.5vw, 5.25rem); /* Hero 主标题 */
+  --text-h1: clamp(2rem, 4.4vw, 3.25rem); /* 区块主标题 */
+  --text-h2: clamp(1.5rem, 3vw, 2.125rem); /* 卡片组标题 */
+  --text-h3: clamp(1.125rem, 1.8vw, 1.375rem); /* 卡片标题 */
+  --text-body-lg: clamp(1rem, 1.4vw, 1.1875rem); /* 导语 */
+  --text-body: 1rem;
+  --text-sm: 0.875rem;
+  --text-xs: 0.8125rem;
+  --text-micro: 0.75rem;
+
+  /* ---------- 排版：行高（与字号反向 —— 越大越紧） ---------- */
+  --leading-display: 1.02;
+  --leading-tight: 1.12;
+  --leading-heading: 1.25;
+  --leading-body: 1.6;
+  --leading-ui: 1.4;
+
+  /* ---------- 排版：字距（随字号变化 —— 大字号负、正文近 0、小字号正） ---------- */
+  --tracking-display: -0.032em;
+  --tracking-h1: -0.022em;
+  --tracking-h2: -0.018em;
+  --tracking-h3: -0.011em;
+  --tracking-body: -0.004em;
+  --tracking-sm: 0.002em;
+  --tracking-label: 0.085em; /* 全大写小标签 */
+
+  /* ---------- 排版：字重 ---------- */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---------- 字体族 ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro SC', 'SF Pro Text',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ---------- 间距：8pt 基准 ---------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+
+  /* ---------- 圆角：连续曲率观感（大面用更大圆角） ---------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-pill: 999px;
+
+  /* ---------- 层级 ---------- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-chrome: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+
+  /* ---------- 动效：时长（仅用于非手势过渡；手势一律走弹簧） ---------- */
+  --dur-instant: 90ms;
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+  --dur-slow: 380ms;
+  --dur-deliberate: 620ms;
+
+  /* ---------- 动效：缓动（仅用于 opacity / color 这类无需中断的属性） ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring-hint: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* ---------- 动效：弹簧参数（Apple damping / response 两参数制） ---------- */
+  --spring-default-damping: 1; /* 大多数 UI：临界阻尼，不弹 */
+  --spring-default-response: 0.38;
+  --spring-momentum-damping: 0.78; /* 仅手势带来的动量：允许轻微过冲 */
+  --spring-momentum-response: 0.34;
+  --spring-sheet-damping: 0.82;
+  --spring-sheet-response: 0.32;
+
+  /* ---------- 材质：模糊半径（大面更厚） ---------- */
+  --blur-chip: 14px;
+  --blur-card: 24px;
+  --blur-chrome: 34px;
+  --blur-hero: 52px;
+  --saturate-glass: 175%;
+
+  /* ---------- 布局 ---------- */
+  --measure: 68ch; /* 正文最大行长 */
+  --container: 1180px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --section-y: clamp(4.5rem, 9vw, 8.5rem);
+
+  /* ---------- 交互命中区 ---------- */
+  --hit-min: 44px;
+}
+
+/* ============================================================================
+   主题：深色（默认）
+   颜色语义 —— 用语义名，不写死色值到组件
+   ========================================================================= */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* 底色：不是纯黑，留一点冷调，玻璃才有东西可折射 */
+  --bg-base: #0a0a0f;
+  --bg-elevated: #101018;
+  --bg-sunken: #06060a;
+
+  /* 背景光斑：玻璃要"折射"的东西，没有它就只是灰 */
+  --aura-1: rgba(88, 122, 255, 0.5);
+  --aura-2: rgba(186, 104, 255, 0.36);
+  --aura-3: rgba(52, 211, 190, 0.24);
+  --aura-opacity: 0.85;
+
+  /* 玻璃材质 —— 三层：底色 + 高光顶边 + 描边 */
+  --glass-bg: rgba(255, 255, 255, 0.055);
+  --glass-bg-strong: rgba(255, 255, 255, 0.085);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.032);
+  --glass-border: rgba(255, 255, 255, 0.11);
+  --glass-border-strong: rgba(255, 255, 255, 0.17);
+  --glass-highlight: rgba(255, 255, 255, 0.22); /* 顶边高光 */
+  --glass-inner-glow: rgba(255, 255, 255, 0.05);
+
+  /* 文字 */
+  --text-primary: #f5f5f7;
+  --text-secondary: rgba(245, 245, 247, 0.72);
+  /* 与浅色主题对称：0.52 在深底上 ≈ 4.2:1，不到 AA 正文线；提到 0.62 过线。 */
+  --text-tertiary: rgba(245, 245, 247, 0.62);
+  --text-quaternary: rgba(245, 245, 247, 0.42);
+  --text-on-accent: #0a0a0f;
+
+  /* 强调色 */
+  --accent: #6e8bff;
+  --accent-hover: #8ba3ff;
+  --accent-soft: rgba(110, 139, 255, 0.14);
+  --accent-border: rgba(110, 139, 255, 0.36);
+  --accent-2: #b46dff;
+  --accent-3: #34d3be;
+
+  /* 分隔与阴影 */
+  --divider: rgba(255, 255, 255, 0.08);
+  --divider-strong: rgba(255, 255, 255, 0.14);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 24px 60px -16px rgba(0, 0, 0, 0.7);
+  --shadow-glass: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 1px 0 0 var(--glass-highlight) inset;
+  --scrim: rgba(4, 4, 8, 0.62);
+
+  /* 焦点环 */
+  --focus-ring: 0 0 0 3px rgba(110, 139, 255, 0.55);
+  --focus-ring-offset: 0 0 0 1px var(--bg-base);
+}
+
+/* ============================================================================
+   主题：浅色
+   ========================================================================= */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg-base: #f7f7fa;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #eeeef3;
+
+  --aura-1: rgba(70, 108, 255, 0.34);
+  --aura-2: rgba(158, 84, 240, 0.24);
+  --aura-3: rgba(20, 178, 158, 0.18);
+  --aura-opacity: 0.9;
+
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.44);
+  --glass-border: rgba(0, 0, 0, 0.075);
+  --glass-border-strong: rgba(0, 0, 0, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-inner-glow: rgba(255, 255, 255, 0.5);
+
+  --text-primary: #12121a;
+  --text-secondary: rgba(18, 18, 26, 0.74);
+  /* 0.56 在浅底上只有 4.18:1，低于 AA 正文线（4.5:1）——小字标签会读不清。
+     提到 0.62 后 ≈ 4.9:1，既过线又保持"次级"的层级感。 */
+  --text-tertiary: rgba(18, 18, 26, 0.62);
+  --text-quaternary: rgba(18, 18, 26, 0.44);
+  --text-on-accent: #ffffff;
+
+  --accent: #3b56e0;
+  --accent-hover: #2c44c4;
+  --accent-soft: rgba(59, 86, 224, 0.1);
+  --accent-border: rgba(59, 86, 224, 0.3);
+  --accent-2: #8b3fd9;
+  --accent-3: #0d8f7d;
+
+  --divider: rgba(0, 0, 0, 0.075);
+  --divider-strong: rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 2px rgba(16, 18, 30, 0.06);
+  --shadow-md: 0 8px 24px -8px rgba(16, 18, 30, 0.14);
+  --shadow-lg: 0 24px 60px -20px rgba(16, 18, 30, 0.2);
+  --shadow-glass: 0 8px 32px -10px rgba(16, 18, 30, 0.16), 0 1px 0 0 var(--glass-highlight) inset;
+  --scrim: rgba(16, 18, 30, 0.42);
+
+  --focus-ring: 0 0 0 3px rgba(59, 86, 224, 0.5);
+  --focus-ring-offset: 0 0 0 1px var(--bg-base);
+}
+
+/* ============================================================================
+   无障碍三降级 —— 必须在令牌层就切断，组件无需各自处理
+   ========================================================================= */
+
+/* ① 降低动态：不删反馈，换成不引起前庭不适的等价物 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 60ms;
+    --dur-fast: 90ms;
+    --dur-base: 120ms;
+    --dur-slow: 160ms;
+    --dur-deliberate: 200ms;
+    /* 弹簧退化为短促淡入：位移量在 base.css 里被清零 */
+    --motion-scale: 0;
+  }
+}
+
+/* ② 降低透明度：玻璃变实心，保留层次但去掉模糊 */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  :root[data-theme='dark'] {
+    --glass-bg: rgba(22, 22, 30, 0.97);
+    --glass-bg-strong: rgba(26, 26, 34, 0.99);
+    --glass-bg-subtle: rgba(20, 20, 27, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.16);
+    --glass-border-strong: rgba(255, 255, 255, 0.24);
+    --blur-chip: 0px;
+    --blur-card: 0px;
+    --blur-chrome: 0px;
+    --blur-hero: 0px;
+    --aura-opacity: 0;
+  }
+  :root[data-theme='light'] {
+    --glass-bg: rgba(255, 255, 255, 0.98);
+    --glass-bg-strong: #ffffff;
+    --glass-bg-subtle: rgba(255, 255, 255, 0.96);
+    --glass-border: rgba(0, 0, 0, 0.14);
+    --glass-border-strong: rgba(0, 0, 0, 0.2);
+    --blur-chip: 0px;
+    --blur-card: 0px;
+    --blur-chrome: 0px;
+    --blur-hero: 0px;
+    --aura-opacity: 0;
+  }
+}
+
+/* ③ 提高对比：近实底 + 明确描边 + 加重文字 */
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme='dark'] {
+    --glass-bg: rgba(14, 14, 20, 0.96);
+    --glass-bg-strong: rgba(18, 18, 26, 0.99);
+    --glass-bg-subtle: rgba(14, 14, 20, 0.94);
+    --glass-border: rgba(255, 255, 255, 0.42);
+    --glass-border-strong: rgba(255, 255, 255, 0.6);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.88);
+    --text-tertiary: rgba(255, 255, 255, 0.74);
+    --text-quaternary: rgba(255, 255, 255, 0.6);
+    --divider: rgba(255, 255, 255, 0.3);
+    --divider-strong: rgba(255, 255, 255, 0.45);
+    --accent: #9db0ff;
+    --focus-ring: 0 0 0 3px #ffffff;
+  }
+  :root[data-theme='light'] {
+    --glass-bg: rgba(255, 255, 255, 1);
+    --glass-bg-strong: #ffffff;
+    --glass-bg-subtle: rgba(255, 255, 255, 0.99);
+    --glass-border: rgba(0, 0, 0, 0.5);
+    --glass-border-strong: rgba(0, 0, 0, 0.72);
+    --text-secondary: rgba(10, 10, 18, 0.88);
+    --text-tertiary: rgba(10, 10, 18, 0.76);
+    --text-quaternary: rgba(10, 10, 18, 0.62);
+    --divider: rgba(0, 0, 0, 0.34);
+    --divider-strong: rgba(0, 0, 0, 0.5);
+    --accent: #1f34b8;
+    --focus-ring: 0 0 0 3px #12121a;
+  }
+  * {
+    /* 强对比下阴影不再承担层次，改用描边 */
+    --shadow-glass: none;
+  }
+}
+
+/* 不支持 backdrop-filter 的兜底：直接给实底，别留半透明糊字 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --blur-chip: 0px;
+    --blur-card: 0px;
+    --blur-chrome: 0px;
+    --blur-hero: 0px;
+  }
+  :root,
+  :root[data-theme='dark'] {
+    --glass-bg: rgba(20, 20, 28, 0.94);
+    --glass-bg-strong: rgba(24, 24, 32, 0.97);
+    --glass-bg-subtle: rgba(18, 18, 26, 0.92);
+  }
+  :root[data-theme='light'] {
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-bg-strong: rgba(255, 255, 255, 0.98);
+    --glass-bg-subtle: rgba(255, 255, 255, 0.92);
+  }
+}

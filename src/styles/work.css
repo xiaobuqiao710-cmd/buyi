@@ -1,0 +1,687 @@
+/* ============================================================================
+   work.css — AI 项目作品集（Co-located CSS）
+   所有颜色 / 间距 / 圆角 / 时长 / 模糊半径均来自 tokens.css，无裸值
+   （mask 里的 #000 是键盘，不是颜色选择，按约定例外）。
+
+   动效纪律：只动 transform / opacity / filter / background / grid-template-rows。
+   绝不碰 width / height / top / left / margin —— 展开时布局不受影响，不抖。
+
+   展开机制（Apple §3 可中断 + §4 两参数弹簧）：
+     .project__expand 是 grid，行高解算由 --project-expand 在 0fr → 1fr 之间插值。
+     进度值由 spring.ts 的 springValue 从**当前呈现值**驱动，所以展开中途再点
+     不会跳、不会撞"砖墙"。0fr 时内层被裁掉，但**不进 Tab 序列也无所谓**：
+     内层只有文本，没有可聚焦控件，收起状态下键盘不会落进来。
+   ========================================================================= */
+
+/* ============================================================================
+   本区块局部几何令牌
+   图形是"抽象艺术"不是界面，它的点径/阵距/描线宽度无法从 spacing 标度推导，
+   所以在这里集中声明一次，之后所有图形规则只引用这些名字 —— 文件里不再出现
+   散落的魔法数字。发丝线统一走 --hairline（与 glass.css 的 1px 边框同源）。
+   ========================================================================= */
+.work {
+  --hairline: 1px;
+  --work-line: var(--hairline); /* 图形描线：与边框同粗，读起来是同一套语言 */
+  --work-grid-dot: 2px; /* 节点阵的圆点直径 */
+  --work-grid-cell: 25%; /* 四格阵距：四列，与 --nodes 的四 Agent 同构 */
+  --work-module-col: 12.5%; /* 模组阵列列距：八列 */
+  --work-module-row: 25%; /* 模组阵列行距：四行 */
+  --work-bar-w: 3px; /* 竖条宽度 */
+  --work-bar-pitch: 9%; /* 竖条间距（含条宽） */
+}
+
+/* ------------------------------------------------------------ 区块骨架 */
+
+.work__list {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* 网格项允许收缩，防止长英文/长技术栈名撑破并排布局 */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 48rem) {
+  .work__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+  /* 大卡横跨整行 —— 破坏 2×2 的规整，重点自然凸显 */
+  .work__item--lead {
+    grid-column: 1 / -1;
+  }
+}
+
+.work__item {
+  min-width: 0;
+  display: flex;
+}
+
+.work__item > * {
+  width: 100%;
+}
+
+/* ------------------------------------------------------------ 卡片本体 */
+
+.project {
+  /* 卡片被 <li> 包着，需要让上下形态拉伸填满行高 */
+  width: 100%;
+  padding: var(--space-6);
+  /* 图形与展开区都靠这个进度值联动 */
+  --project-expand: 0;
+}
+
+.project__root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  min-width: 0;
+}
+
+/* 大卡：宽屏下左右分栏，文字在左、抽象视觉在右并撑满 */
+@media (min-width: 62rem) {
+  .project--lead {
+    padding: var(--space-7);
+  }
+  .project--lead .project__root {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-7);
+  }
+  .project--lead .project__body {
+    flex: 1 1 62%;
+    min-width: 0;
+  }
+  .project--lead .project__figure {
+    flex: 0 0 34%;
+    /* 竖直方向拉满，视觉与文字等高 —— 读起来是一整块，不是一张贴图 */
+    align-self: stretch;
+    min-height: 100%;
+  }
+}
+
+.project__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* ------------------------------------------------------------ 文字层级 */
+/* 目标：标题 / 导语 / 正文 / 标签四级，绝不出现"卡片里所有字一样大" */
+
+.project__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.project__flag {
+  color: var(--project-accent, var(--accent));
+  /* label 类已是全大写小标签，这里只改颜色，不改字号 */
+}
+
+.project__title {
+  font-size: var(--text-h3);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-h3);
+  /* 标题用 semibold 压住信息密度 */
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+/* 大卡标题再上一级：它是这一屏的第一眼 */
+.project--lead .project__title {
+  font-size: var(--text-h2);
+  letter-spacing: var(--tracking-h2);
+  line-height: var(--leading-heading);
+}
+
+.project__tagline {
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.project__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* 展开区里的小节标题：比正文重、比卡片标题小 —— 不抢标题，但能分块 */
+.project__block-title {
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.project__background {
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-secondary);
+}
+
+.project__bullets {
+  /* .bullets 已给 --text-sm 与短横线；这里只压一下与上一块的间距 */
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ 指标与标签 */
+
+.project__facts {
+  /* 用一条上分隔线代替嵌套玻璃面（浅玻璃叠浅玻璃会让可读性崩） */
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+
+.project--compact .project__facts {
+  /* 紧凑卡指标别把行撑爆 */
+  padding-top: var(--space-3);
+}
+
+.project__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  /* 推到卡片底部：同一行的卡片按钮对齐 */
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+
+.project__tech {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.project__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+/* 展开指示箭头：随进度旋转，是"按了会有东西出来"的方向提示（Apple §8） */
+.project__toggle-icon {
+  display: inline-flex;
+  transform: rotate(calc(var(--project-expand) * 180deg));
+}
+
+.project__link {
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------ 就地展开
+   行高用 grid-template-rows，但**不能**写 calc(var(--x) * 1fr)：
+   CSS 不允许把 fr 乘以一个数，整条声明会被解析器丢弃，grid 回退到 auto，
+   结果是"永远展开"——卡片高度虚高且按钮点了没反应。这是本项目踩过的坑。
+   正确做法：0fr ↔ 1fr 两个离散值，由 [data-open] 切换；
+   行高的插值交给浏览器自己的 fr 过渡，opacity/transform 仍由弹簧进度驱动。
+   内层必须 min-height: 0，否则 grid 子项压不到 0，行高会被顶回去。 */
+
+.project__expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  /* 收起时不该接住指针事件 */
+  pointer-events: none;
+  transition: grid-template-rows var(--dur-deliberate) var(--ease-out);
+}
+
+[data-open='true'] .project__expand {
+  grid-template-rows: 1fr;
+  pointer-events: auto;
+}
+
+.project__expand-inner {
+  /* grid 子项在 0fr 时必须允许被压到 0，否则会把行高顶回去 */
+  min-height: 0;
+  overflow: hidden;
+  opacity: var(--project-expand);
+  /* 位移用 rem，与字号一起缩放（尊重用户的动态字号设置） */
+  transform: translate3d(0, calc(var(--space-3) * (1 - var(--project-expand))), 0);
+}
+
+/* reduced-motion：行高不做过场，直接切换 */
+@media (prefers-reduced-motion: reduce) {
+  .project__expand {
+    transition-duration: var(--dur-instant);
+  }
+}
+
+.project__expand-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  /* 从顶部开始排，展开过程中内容是"露出来"而不是"被推下来" */
+  align-content: start;
+}
+
+/* 大卡内部：背景与贡献并排，把横向空间用起来 */
+@media (min-width: 48rem) {
+  .project--lead .project__expand-grid {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: var(--space-6);
+  }
+}
+
+/* 紧凑卡展开区紧跟在操作行之后：间距交给 .project__body 的 gap，不在这里动 margin
+   （margin 会参与布局，展开时任何 margin 变化都会引起回流；统一由 gap 承担）。 */
+
+/* ============================================================================
+   抽象视觉 —— 每个项目一个几何身份
+   用 project.accentVar 上色；克制、几何、有呼吸感。
+   三要素：① 一个主形状（.project__shape--a）② 一个结构层（--b）③ 一个光晕（--c）。
+   全部只用 background / mask / filter / transform，不用图片、不用 base64。
+   ========================================================================= */
+
+.project__figure {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-subtle);
+  /* 呼吸感来自"底噪":一层极淡的径向光，让纯几何不至于干硬 */
+  background-image: radial-gradient(
+    120% 90% at 30% 0%,
+    var(--project-accent, var(--accent)),
+    transparent 62%
+  );
+  isolation: isolate;
+  flex: 0 0 auto;
+}
+
+/* 大卡图形更高，才能与整卡文字等高；紧凑卡压成一条横带 */
+.project__figure--lg {
+  aspect-ratio: 16 / 7;
+  min-height: 12rem;
+}
+
+.project__figure--sm {
+  aspect-ratio: 16 / 5;
+  min-height: 6.5rem;
+}
+
+.project__shape {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 主形状统一用低不透明度上色，避免五颜六色的噪点感 */
+.project__shape--a {
+  opacity: 0.9;
+}
+
+.project__shape--b {
+  opacity: 0.5;
+}
+
+.project__shape--c {
+  /* 光晕：只负责纵深，不负责形状 */
+  inset: -30%;
+  background: radial-gradient(
+    closest-side,
+    var(--project-accent, var(--accent)),
+    transparent 70%
+  );
+  filter: blur(var(--blur-card));
+  opacity: 0.34;
+  mix-blend-mode: screen;
+}
+
+:root[data-theme='light'] .project__shape--c {
+  /* 浅色下 screen 会洗白，改用 multiply 才有层次 */
+  mix-blend-mode: multiply;
+  opacity: 0.22;
+}
+
+/* 图形随指针高光一起"活着"：进度展开时轻微放大并提亮（§1 反馈连续） */
+.project__figure {
+  transition: filter var(--dur-slow) var(--ease-out),
+    opacity var(--dur-slow) var(--ease-out);
+  filter: saturate(90%);
+}
+
+.project:hover .project__figure {
+  filter: saturate(115%);
+}
+
+/* ① nodes —— 四个职责单一的 Agent 互相校验：节点 + 连线 + 一个被否决的回环。
+   网格与描线全部由 --project-grid / --hairline 推导，几何随令牌缩放。 */
+.project__figure--nodes .project__shape--a {
+  inset: 0;
+  background-image: radial-gradient(
+      circle at center,
+      var(--project-accent, var(--accent)) 0 var(--work-grid-dot),
+      transparent var(--work-grid-dot)
+    ),
+    linear-gradient(
+      to right,
+      var(--project-accent, var(--accent)) 0 var(--hairline),
+      transparent var(--hairline)
+    ),
+    linear-gradient(
+      to bottom,
+      var(--project-accent, var(--accent)) 0 var(--hairline),
+      transparent var(--hairline)
+    );
+  background-size: var(--work-grid-cell) var(--work-grid-cell),
+    var(--work-grid-cell) var(--work-grid-cell), var(--work-grid-cell) var(--work-grid-cell);
+  background-position: center;
+  opacity: 0.75;
+}
+
+/* 结构层：一个偏移的方框，读作"质检打回上一环节"的回环 */
+.project__figure--nodes .project__shape--b {
+  left: 22%;
+  top: 16%;
+  width: 56%;
+  height: 68%;
+  border: 1px solid var(--project-accent, var(--accent));
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    135deg,
+    transparent 40%,
+    var(--project-accent, var(--accent)) 40% 41%,
+    transparent 41%
+  );
+}
+
+/* ② grid —— 12 大板块、100+ 字段：模组化的方格阵列，其中一格是"实心出口" */
+.project__figure--grid .project__shape--a {
+  inset: 12% 8%;
+  background-image: repeating-linear-gradient(
+      to right,
+      var(--project-accent, var(--accent)) 0 var(--work-line),
+      transparent var(--work-line) var(--work-module-col)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--project-accent, var(--accent)) 0 var(--work-line),
+      transparent var(--work-line) var(--work-module-row)
+    );
+  opacity: 0.6;
+}
+
+/* 结构层：被点亮的那个"唯一出口"模组 */
+.project__figure--grid .project__shape--b {
+  left: 8%;
+  top: 25%;
+  width: var(--work-module-col);
+  height: var(--work-module-row);
+  background: var(--project-accent, var(--accent));
+  border-radius: var(--radius-xs);
+  transform: translate3d(calc(100% * 4), 0, 0);
+  opacity: 0.85;
+}
+
+/* ③ pipeline —— 五段链路依次推进：五级阶梯 + 一条贯通线 */
+.project__figure--pipeline .project__shape--a {
+  left: 10%;
+  right: 10%;
+  bottom: 22%;
+  height: var(--hairline);
+  background: var(--project-accent, var(--accent));
+  opacity: 0.55;
+}
+
+/* 阶梯用重复渐变造五级，每级抬高一档；档高由 --project-step 统一推导，
+   与 clip-path 的五级坐标一一对应（5 级 × 20%）。 */
+.project__figure--pipeline .project__shape--b {
+  --project-step: 20%;
+  left: 12%;
+  right: 12%;
+  bottom: 22%;
+  height: 62%;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--project-accent, var(--accent)) 0 6%,
+    transparent 6% 20%
+  );
+  -webkit-mask-image: linear-gradient(
+    to top,
+    #000 0%,
+    #000 var(--project-step),
+    transparent var(--project-step),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to top,
+    #000 0%,
+    #000 var(--project-step),
+    transparent var(--project-step),
+    transparent 100%
+  );
+  opacity: 0.7;
+  /* clip-path 把方块削成五级阶梯：纯几何、无图片。
+     最后两级顶到 0 与 12%，读作"链路末端收束"。 */
+  clip-path: polygon(
+    0 100%,
+    0 62%,
+    var(--project-step) 62%,
+    var(--project-step) 44%,
+    calc(var(--project-step) * 2) 44%,
+    calc(var(--project-step) * 2) 26%,
+    calc(var(--project-step) * 3) 26%,
+    calc(var(--project-step) * 3) 12%,
+    calc(var(--project-step) * 4) 12%,
+    calc(var(--project-step) * 4) 0,
+    100% 0,
+    100% 100%
+  );
+}
+
+/* ④ bars —— 排期与节奏：一列疏密变化的竖条（每日 21 词 + 1 篇阅读） */
+.project__figure--bars .project__shape--a {
+  inset: 18% 8%;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--project-accent, var(--accent)) 0 var(--work-bar-w),
+    transparent var(--work-bar-w) var(--work-bar-pitch)
+  );
+  opacity: 0.7;
+  /* 顶部渐隐，做出"波形"的起伏而不是齐刷刷一排 */
+  -webkit-mask-image: radial-gradient(
+    140% 120% at 30% 0%,
+    #000 30%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(140% 120% at 30% 0%, #000 30%, transparent 78%);
+}
+
+.project__figure--bars .project__shape--b {
+  left: 8%;
+  right: 8%;
+  top: 50%;
+  height: var(--hairline);
+  background: var(--project-accent, var(--accent));
+  opacity: 0.45;
+}
+
+/* ⑤ rings —— 每日归档回库：同心环，一圈一圈往中心收 */
+.project__figure--rings .project__shape--a {
+  inset: 8%;
+  border-radius: var(--radius-pill);
+  background: repeating-radial-gradient(
+    circle at 50% 50%,
+    var(--project-accent, var(--accent)) 0 var(--work-line),
+    transparent var(--work-line) var(--work-module-col)
+  );
+  opacity: 0.75;
+}
+
+.project__figure--rings .project__shape--b {
+  left: 50%;
+  top: 50%;
+  width: 18%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  background: var(--project-accent, var(--accent));
+  /* 用百分比位移居中：不依赖固定尺寸，缩放时始终在圆心 */
+  transform: translate3d(-50%, -50%, 0);
+  opacity: 0.85;
+}
+
+/* 图形整体做一次极缓的呼吸（远低于 0.2Hz 闪烁阈值），
+   位移/缩放乘以 --motion-scale，降低动态时自动归零。 */
+.project__shape--b {
+  animation: project-breathe 9s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes project-breathe {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, calc(-0.5rem * var(--motion-scale)), 0);
+  }
+}
+
+/* --b 各自需要保留的定位 transform 会与呼吸动画打架，
+   所以把有定位需求的几何放在 --b 上时，用 --a 承载动画 -->
+.project__figure--grid .project__shape--b,
+.project__figure--rings .project__shape--b {
+  animation: none;
+}
+
+.project__figure--grid .project__shape--a,
+.project__figure--rings .project__shape--a {
+  animation: project-breathe 9s var(--ease-in-out) infinite alternate;
+}
+
+/* ============================================================================
+   无障碍降级 —— 三档都要有明确回应
+   ========================================================================= */
+
+/* ① 降低动态：弹簧在 JS 侧已直接落终值，这里把"最终可见性"钉死，
+      任何情况下展开内容都不会因为进度值停在 0 而看不见。 */
+@media (prefers-reduced-motion: reduce) {
+  .project__expand,
+  [data-open='true'] .project__expand {
+    grid-template-rows: 1fr;
+  }
+  .project__expand-inner {
+    opacity: 1;
+    transform: none;
+  }
+  .project__figure,
+  .project__figure:hover {
+    filter: none;
+  }
+  .project__shape--a,
+  .project__shape--b {
+    animation: none;
+  }
+}
+
+/* ② 降低透明度：令牌已把 --blur-* 归零。图形不能靠模糊光晕撑场，
+      改用描边与更高的不透明度读形状。 */
+@media (prefers-reduced-transparency: reduce) {
+  .project__figure {
+    background-image: none;
+    background: var(--glass-bg-subtle);
+    border-color: var(--glass-border-strong);
+  }
+  .project__shape--c {
+    display: none;
+  }
+  .project__shape--a {
+    opacity: 1;
+  }
+  .project__shape--b {
+    opacity: 0.75;
+  }
+  /* 实底之后玻璃不再"saturate"，图形自己补回饱和 */
+  .project__figure,
+  .project:hover .project__figure {
+    filter: none;
+  }
+}
+
+/* ③ 提高对比：实底 + 明确描边 + 图形加重。
+      contrast:more 下阴影不再承担层次（令牌已把 --shadow-glass 设为 none），
+      分隔线换成强描边值。 */
+@media (prefers-contrast: more) {
+  .project__facts,
+  .project__foot {
+    border-top-color: var(--divider-strong);
+  }
+  .project__figure {
+    border-color: var(--glass-border-strong);
+    background-image: none;
+    background: var(--glass-bg-subtle);
+  }
+  .project__shape--a,
+  .project__shape--b {
+    opacity: 1;
+  }
+  .project__shape--c {
+    display: none;
+  }
+  .project__tagline,
+  .project__background,
+  .project__block-title {
+    color: var(--text-secondary);
+  }
+}
+
+/* ------------------------------------------------------------ 打印 */
+
+@media print {
+  .work__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .project__figure,
+  .project__shape,
+  .project__toggle {
+    display: none;
+  }
+  .project {
+    border: 1px solid currentColor;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    break-inside: avoid;
+  }
+  .project__expand {
+    grid-template-rows: 1fr;
+  }
+  .project__expand-inner {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------ 窄屏兜底 */
+
+/* 极窄屏（320px）：单列、图形收矮、按钮满宽，不出现横向溢出 */
+@media (max-width: 26rem) {
+  .project {
+    padding: var(--space-5);
+  }
+  .project__figure--lg,
+  .project__figure--sm {
+    aspect-ratio: 16 / 4;
+    min-height: 4.5rem;
+  }
+  .project__actions {
+    width: 100%;
+  }
+  .project__actions > * {
+    flex: 1 1 auto;
+  }
+  .project__foot {
+    justify-content: stretch;
+  }
+}

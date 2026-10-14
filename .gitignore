@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+*.local
+.env
+.env.local
+.vercel
+*.tsbuildinfo
+
+# 渲染 QA 的截图产物：本地复核用，不进仓库（体积大且每次跑 QA 都会变）
+.qa-shots/
+
+# 设计调研的标杆截图：版权属原站点，仅作本地比对，不随仓库分发
+design/refs/

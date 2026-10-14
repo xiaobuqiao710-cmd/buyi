@@ -1,0 +1,296 @@
+/* ============================================================================
+   glass.css — 液态玻璃材质系统
+   Apple《Materials & Depth》在 Web 上的落地：
+     · 玻璃是"浮在内容之上的功能层"，不是装饰
+     · 大面更厚（更强模糊 + 更深投影），小芯片更薄
+     · 禁止把浅玻璃叠在浅玻璃上（可读性会崩）
+     · 顶边高光 = 光打在材质上；描边 = 材质的边界
+     · 出现要"材质化"（blur + scale 同时动），不能只是不透明度淡入
+   ========================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. 材质基类 —— 三层构造：底色 / 内高光 / 描边
+   任何玻璃面都必须从这里派生，不要自己写 backdrop-filter
+   --------------------------------------------------------------------------- */
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--blur-card)) saturate(var(--saturate-glass));
+  backdrop-filter: blur(var(--blur-card)) saturate(var(--saturate-glass));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
+  transition: background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+/* 顶边高光：单独一条渐变线，比整圈 border 更像"光从上打到材质上" */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    var(--glass-highlight) 0%,
+    transparent 38%,
+    transparent 62%,
+    var(--glass-inner-glow) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.9;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+/* 折射边缘：模拟玻璃把背景"折射"进来的亮边，只在有真实背景时可见 */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 100% at 50% 0%,
+    var(--glass-inner-glow) 0%,
+    transparent 55%
+  );
+  opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------------------
+   2. 材质厚度分级 —— 大面更厚
+   --------------------------------------------------------------------------- */
+.glass--thin {
+  background: var(--glass-bg-subtle);
+  -webkit-backdrop-filter: blur(var(--blur-chip)) saturate(var(--saturate-glass));
+  backdrop-filter: blur(var(--blur-chip)) saturate(var(--saturate-glass));
+  box-shadow: var(--shadow-sm), 0 1px 0 0 var(--glass-highlight) inset;
+}
+
+.glass--regular {
+  /* .glass 默认值 */
+}
+
+.glass--thick {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--blur-card)) saturate(var(--saturate-glass));
+  backdrop-filter: blur(var(--blur-card)) saturate(var(--saturate-glass));
+  border-color: var(--glass-border-strong);
+  box-shadow: var(--shadow-md), 0 1px 0 0 var(--glass-highlight) inset;
+}
+
+/* 导航 / 侧栏级：最厚的结构材质，允许把内容压下去 */
+.glass--chrome {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--blur-chrome)) saturate(var(--saturate-glass));
+  backdrop-filter: blur(var(--blur-chrome)) saturate(var(--saturate-glass));
+  border-color: var(--glass-border-strong);
+  box-shadow: var(--shadow-md), 0 1px 0 0 var(--glass-highlight) inset;
+}
+
+/* ---------------------------------------------------------------------------
+   3. 圆角分级
+   --------------------------------------------------------------------------- */
+.glass--r-sm {
+  border-radius: var(--radius-md);
+}
+.glass--r-md {
+  border-radius: var(--radius-lg);
+}
+.glass--r-lg {
+  border-radius: var(--radius-xl);
+}
+.glass--r-xl {
+  border-radius: var(--radius-2xl);
+}
+.glass--r-pill {
+  border-radius: var(--radius-pill);
+}
+
+/* ---------------------------------------------------------------------------
+   4. 可交互玻璃卡片
+   —— 严格只动 transform / background / border / box-shadow（合成器友好）
+   —— 反馈在 pointer-down 就出现（Apple §1：反馈必须即时）
+   --------------------------------------------------------------------------- */
+.glass-card {
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  overflow: hidden;
+}
+
+.glass-card--interactive {
+  cursor: pointer;
+  /* hover 上浮用手感弹簧曲线；按下立刻回弹 */
+}
+
+.glass-card--interactive:hover {
+  background: var(--glass-bg-strong);
+  border-color: var(--glass-border-strong);
+  transform: translate3d(0, calc(-4px * var(--motion-scale)), 0);
+  box-shadow: var(--shadow-lg), 0 1px 0 0 var(--glass-highlight) inset;
+}
+
+/* 按下必须在 pointer-down 即刻反馈 —— 用 :active，不加 transition-delay */
+.glass-card--interactive:active {
+  transform: translate3d(0, 0, 0) scale(0.992);
+  transition-duration: var(--dur-instant);
+}
+
+@media (hover: none) {
+  /* 触屏没有 hover，别让 :hover 粘住 */
+  .glass-card--interactive:hover {
+    transform: none;
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   5. 指针跟随高光（指针设备专用）
+   由 usePointerGlow 写入 --glow-x / --glow-y；触屏与降低动态时不启用
+   --------------------------------------------------------------------------- */
+.glass-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    28rem 28rem at var(--glow-x, 50%) var(--glow-y, 0%),
+    var(--glass-inner-glow),
+    transparent 42%
+  );
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .glass-glow:hover::after,
+  .glass-glow:focus-within::after {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   6. 顶部玻璃导航
+   内容从下方滚过 —— 不是不透明条；有滚动时才出现底边与投影
+   --------------------------------------------------------------------------- */
+.chrome-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-chrome);
+  height: var(--hit-min);
+  display: flex;
+  align-items: center;
+  /* 形态由 useScrolled 写入 data-scrolled 驱动 */
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  transition: background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    backdrop-filter var(--dur-base) var(--ease-out);
+}
+
+.chrome-bar[data-scrolled='true'] {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--blur-chrome)) saturate(var(--saturate-glass));
+  backdrop-filter: blur(var(--blur-chrome)) saturate(var(--saturate-glass));
+  border-bottom-color: var(--glass-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 滚动边缘效果：不用硬分割线，用渐隐遮罩 */
+.chrome-bar__edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+  background: linear-gradient(to bottom, var(--glass-bg-subtle), transparent);
+}
+
+.chrome-bar[data-scrolled='true'] .chrome-bar__edge {
+  opacity: 0.5;
+}
+
+/* ---------------------------------------------------------------------------
+   7. 浮层 / 弹层 —— 材质化出现（blur + scale 同时动）
+   --------------------------------------------------------------------------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+}
+
+.overlay__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: var(--overlay-progress, 0);
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.overlay__panel {
+  position: relative;
+  width: min(100%, 46rem);
+  max-height: min(84dvh, 52rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--radius-2xl);
+  /* 材质化：模糊半径与缩放一起动 */
+  opacity: var(--overlay-progress, 0);
+  transform: scale(calc(0.94 + 0.06 * var(--overlay-progress, 0)));
+  -webkit-backdrop-filter: blur(calc(var(--blur-hero) * var(--overlay-progress, 0)))
+    saturate(var(--saturate-glass));
+  backdrop-filter: blur(calc(var(--blur-hero) * var(--overlay-progress, 0)))
+    saturate(var(--saturate-glass));
+  transition: opacity var(--dur-base) var(--ease-out),
+    transform var(--dur-base) var(--ease-out);
+}
+
+/* ---------------------------------------------------------------------------
+   8. 胶囊标签 / 徽章
+   --------------------------------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-secondary);
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--glass-border);
+  white-space: nowrap;
+}
+
+.chip--accent {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+
+.chip--sm {
+  padding: 0.2rem 0.55rem;
+  font-size: var(--text-micro);
+}

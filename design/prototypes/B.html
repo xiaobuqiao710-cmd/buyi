@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>方向 B · 大字海报</title>
+<style>
+/* ============ 方向 B：大字海报 ============
+   引擎：一场设计运动（瑞士国际主义海报 + 当代字体驱动）
+   骨架：满版文字 + 纵排/裁切（文字本身即画面，跨过边界）
+   色彩：纯白 #FFFFFF / 纯黑 #0A0A0A / 暖橙 #FF5A1F —— 仅三色
+   字体：思源黑体 Heavy 超大字 vs 16px 常规，字重拉到最开
+   主视觉：几何纯色大圆 + 排版本身
+========================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:#FFFFFF;color:#0A0A0A;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;font-synthesis-weight:none;
+}
+.stage{position:relative;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* 顶栏：无背景无边框，只有一条 1px 黑线压顶 */
+.top{position:absolute;top:0;left:0;right:0;z-index:5;display:flex;
+  justify-content:space-between;align-items:center;padding:22px 4vw;
+  font-size:12.5px;letter-spacing:.06em;border-bottom:1px solid #0A0A0A}
+.top__nav{display:flex;gap:26px}
+.top__nav a{color:#0A0A0A;text-decoration:none}
+.top__tag{font-weight:700;letter-spacing:.14em}
+
+/* 几何大圆：主视觉，压在文字上 */
+.disc{position:absolute;z-index:1;width:min(42vw,560px);aspect-ratio:1;border-radius:50%;
+  background:#FF5A1F;right:7vw;top:16vh}
+
+/* 超大字：占满首屏宽度，第三行被右侧裁切出边界（有意，由 overflow 完成） */
+.poster{position:relative;z-index:2;margin-top:auto;width:100%;padding:0 4vw 3.5vh}
+.line{margin:0;font-weight:800;letter-spacing:-.05em;line-height:.92;
+  font-size:clamp(48px,9.6vw,140px);white-space:nowrap;display:block}
+.line--2{padding-left:10vw}     /* 阶梯错位，打破从左到右 */
+.line--3{color:#FF5A1F;padding-left:22vw}
+
+/* 左侧一列窄文字，与大字形成极端字重对比 */
+.side{position:absolute;z-index:3;left:4vw;top:15vh;width:min(27vw,330px);
+  font-size:13.5px;line-height:1.78;color:#3A3A3A}
+.side b{display:block;color:#0A0A0A;font-size:14px;margin-bottom:10px;letter-spacing:.02em}
+.side .k{display:block;margin-top:20px;font-size:11.5px;letter-spacing:.14em;color:#8A8A8A}
+.side .v{font-weight:700;color:#0A0A0A;font-variant-numeric:tabular-nums}
+
+.bar{position:relative;z-index:6;display:flex;align-items:center;flex:none;
+  justify-content:space-between;padding:18px 4vw;border-top:1px solid #0A0A0A;background:#fff}
+.acts{display:flex;gap:12px}
+.b{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;
+  text-decoration:none;padding:11px 20px;border-radius:0;border:1.5px solid #0A0A0A}
+.b--fill{background:#0A0A0A;color:#fff}
+.b--ghost{background:#fff;color:#0A0A0A}
+.scroll{font-size:11.5px;letter-spacing:.16em;color:#8A8A8A}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="top">
+    <div class="top__tag">宋建豪 · 法律 × AI</div>
+    <nav class="top__nav">
+      <a href="#">AI 项目</a><a href="#">法律经历</a><a href="#">教育荣誉</a><a href="#">联系</a>
+    </nav>
+  </div>
+
+  <div class="disc"></div>
+
+  <div class="side">
+    <b>北京大学法律硕士（金融法）</b>
+    在红圈与精品所的证券、IPO 项目里做检索与文书，再把这条工作流拆开、重建成可复用的 AI Agent 系统。
+    <span class="k">一组数字</span>
+    <span class="v">5</span> 个 AI 项目<br>
+    <span class="v">4</span> 个专职 Agent<br>
+    <span class="v">5</span> 条自动化链路
+  </div>
+
+  <h1 class="poster">
+    <span class="line line--1">法律专业能力</span>
+    <span class="line line--2">× AI AGENT</span>
+    <span class="line line--3">工程实践</span>
+  </h1>
+
+  <div class="bar">
+    <div class="acts">
+      <a class="b b--fill" href="#">↓ 下载简历</a>
+      <a class="b b--ghost" href="#">查看 AI 项目</a>
+    </div>
+    <div class="scroll">SCROLL ↓</div>
+  </div>
+
+</div>
+</body>
+</html>

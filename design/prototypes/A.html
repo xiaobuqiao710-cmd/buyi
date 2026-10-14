@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>方向 A · 纸本档案</title>
+<style>
+/* ============ 方向 A：纸本档案 ============
+   引擎：材质×环境 → 一张优质的米白档案纸，日光下平放
+   骨架：满版文字（跳出左右分栏）
+   色彩：纸白 #FAF9F6 / 墨黑 #1A1A18 / 法律蓝 #1B3A6B
+   字体：正文思源宋体衬线（法律文书质感），标题苹方粗体
+   主视觉：排版本身 + 一条贯穿全页的装订线
+========================================== */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#FAF9F6; color:#1A1A18;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  font-synthesis-weight:none;
+}
+.page{position:relative;min-height:100vh;padding:0 6vw;
+  display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr auto;
+  gap:0;max-width:1560px;margin:0 auto}
+
+/* 极薄顶栏：只有名字与四个链接，无边框无背景 */
+.top{grid-column:1/-1;display:flex;align-items:baseline;justify-content:space-between;
+  padding:34px 0 0;font-size:13.5px;letter-spacing:.01em}
+.top__name{font-weight:600;letter-spacing:.02em}
+.top__nav{display:flex;gap:30px;color:#5C5A55}
+.top__nav a{color:inherit;text-decoration:none}
+.top__nav a[aria-current]{color:#1A1A18;font-weight:600}
+
+/* 主体：文字直接放在纸上，无容器 */
+.main{grid-column:1;align-self:center;padding:5vh 0 9vh;max-width:760px}
+
+.eyebrow{font-size:13px;letter-spacing:.14em;color:#6B6862;margin-bottom:26px}
+/* 满版文字：展示字撑满可用宽度 */
+h1{font-size:clamp(56px,9.2vw,132px);line-height:1.02;letter-spacing:-.035em;
+  font-weight:700;margin-bottom:30px}
+h1 .thin{font-weight:400;color:#4A4843}
+.claim{font-family:"Songti SC","Source Han Serif SC","Noto Serif CJK SC",serif;
+  font-size:clamp(19px,1.75vw,25px);line-height:1.62;color:#33312D;max-width:30em;
+  letter-spacing:.005em}
+.claim em{font-style:normal;border-bottom:2px solid #1B3A6B;padding-bottom:2px;color:#1B3A6B;font-weight:600}
+.rule{height:1px;background:#DDD9D0;margin:38px 0;max-width:520px}
+.meta{display:flex;gap:44px;font-size:13.5px;line-height:1.85;color:#55534E}
+.meta dt{color:#8A8781;font-size:12px;letter-spacing:.1em;margin-bottom:7px}
+.meta dd{color:#26241F;font-weight:500}
+
+.cta{grid-column:1;display:flex;align-items:center;gap:26px;padding-bottom:56px}
+.btn{display:inline-flex;align-items:center;gap:9px;font-size:14.5px;font-weight:600;
+  text-decoration:none;padding:13px 26px;border-radius:3px;transition:none}
+.btn--ink{background:#1A1A18;color:#FAF9F6}
+.btn--line{color:#1A1A18;border:1px solid #C9C5BB}
+.btn--plain{color:#1B3A6B;font-weight:600;padding:13px 4px;border:0}
+
+/* 贯穿全页的装订线：主视觉的一部分 */
+.binding{grid-column:2;grid-row:2/4;position:relative;width:1px;background:#DDD9D0;margin:3vh 0 0}
+.binding::before{content:"";position:absolute;left:-3px;top:0;width:7px;height:7px;
+  border-radius:50%;background:#1B3A6B}
+.binding__marks{position:absolute;left:14px;top:8%;display:flex;flex-direction:column;gap:26px}
+.binding__marks span{font-size:11.5px;letter-spacing:.11em;color:#9A968E;white-space:nowrap}
+.binding__marks span.on{color:#1B3A6B;font-weight:600}
+
+/* 一组数字：不用卡片，只用一条细线分隔 */
+.figures{grid-column:1/-1;display:flex;gap:64px;padding:30px 0 0;
+  border-top:1px solid #DDD9D0}
+.fig{}
+.fig__n{font-size:46px;font-weight:700;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.fig__l{font-size:12.5px;color:#6B6862;margin-top:11px;letter-spacing:.02em}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <div class="top__name">宋建豪</div>
+    <nav class="top__nav">
+      <a href="#" aria-current="page">首页</a><a href="#">AI 项目</a>
+      <a href="#">法律经历</a><a href="#">教育荣誉</a><a href="#">联系</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="eyebrow">北京 · 法律硕士 · 法律职业资格 A 类</div>
+    <h1>宋建豪</h1>
+    <p class="claim">北京大学法律硕士（金融法）。在红圈与精品所的证券、IPO 项目里做检索与文书；同时把这条工作流拆开、<em>重建成可复用的 AI Agent 系统</em>。</p>
+    <div class="rule"></div>
+    <dl class="meta">
+      <div><dt>当前</dt><dd>北京大学 · 法律硕士（金融法）</dd></div>
+      <div><dt>方向</dt><dd>法律专业能力 × AI Agent 工程</dd></div>
+      <div><dt>联系</dt><dd>1829260561@qq.com</dd></div>
+    </dl>
+  </div>
+
+  <div class="binding">
+    <div class="binding__marks">
+      <span class="on">01 首页</span>
+      <span>02 AI 项目</span>
+      <span>03 法律经历</span>
+      <span>04 教育荣誉</span>
+      <span>05 联系</span>
+    </div>
+  </div>
+
+  <div class="cta">
+    <a class="btn btn--ink" href="#">↓ 下载简历</a>
+    <a class="btn btn--line" href="#">查看 AI 项目</a>
+    <a class="btn btn--plain" href="#">邮件联系 →</a>
+  </div>
+
+  <div class="figures">
+    <div class="fig"><div class="fig__n">5</div><div class="fig__l">个 AI 项目</div></div>
+    <div class="fig"><div class="fig__n">4</div><div class="fig__l">个专职 Agent</div></div>
+    <div class="fig"><div class="fig__n">5</div><div class="fig__l">条自动化链路</div></div>
+  </div>
+
+</div>
+</body>
+</html>

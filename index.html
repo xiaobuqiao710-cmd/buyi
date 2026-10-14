@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- favicon 走绝对路径：项目站点部署在 /<仓库名>/ 子路径下，
+         相对路径在深层锚点（如 /buyi/#work）解析时会指错地方。 -->
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link rel="apple-touch-icon" href="%BASE_URL%favicon.svg" />
+    <meta name="theme-color" content="#0a0a0f" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f7fa" media="(prefers-color-scheme: light)" />
+    <title>宋建豪 · 法律 × AI</title>
+    <meta
+      name="description"
+      content="宋建豪 — 北京大学法律硕士（金融法）。法律专业能力与 AI Agent 工程能力的交叉点：自研四智能体法律检索工作流、秋招云端网申平台等。"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="宋建豪 · 法律 × AI" />
+    <meta
+      property="og:description"
+      content="北京大学法律硕士（金融法）｜法律专业能力 × AI Agent 工程实践"
+    />
+    <!-- 让首屏背景色与主题一致，避免加载瞬间白闪 -->
+    <style>
+      html { background: #0a0a0f; }
+      @media (prefers-color-scheme: light) { html { background: #f7f7fa; } }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
