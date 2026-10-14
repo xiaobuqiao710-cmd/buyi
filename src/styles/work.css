@@ -80,12 +80,22 @@
   min-width: 0;
 }
 
+/* 行容器：窄屏纵向堆叠（图形在上、文字在下），宽屏才分栏。
+   展开区不在这一层里 —— 它挂在 .project__root 下、.project__row 之后，
+   这样无论哪种形态都能横跨整张卡片的宽度（留在 body 内只拿到 62%）。 */
+.project__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
 /* 大卡：宽屏下左右分栏，文字在左、抽象视觉在右并撑满 */
 @media (min-width: 62rem) {
   .project--lead {
     padding: var(--space-7);
   }
-  .project--lead .project__root {
+  .project--lead .project__row {
     flex-direction: row;
     align-items: stretch;
     gap: var(--space-7);
@@ -142,11 +152,14 @@
 }
 
 .project__tagline {
-  font-size: var(--text-sm);
+  /* 卡片副标题承担正文阅读职责，字号不能低于 15px；行宽同时收进 --measure，
+     否则 14px 的小字拉满卡片宽会到 43 字/行，既难读又和区块导语的节奏打架。 */
+  font-size: var(--text-base-sm);
   line-height: var(--leading-body);
   letter-spacing: var(--tracking-sm);
   color: var(--text-secondary);
   text-wrap: pretty;
+  max-width: var(--measure);
 }
 
 .project__block {
@@ -165,10 +178,16 @@
 }
 
 .project__background {
-  font-size: var(--text-sm);
+  /* 与 .project__tagline 同为「承担阅读职责」的正文，字号不得低于 15px。
+     曾经取消过 .measure，原因是展开区被限制在 62% 的 body 栏内，单栏仅约 285px，
+     套上限没有意义。现已把展开区移出 body 横跨整卡，双栏各约 500px，
+     所以这里重新加上 --measure 约束，避免长行走宽。 */
+  font-size: var(--text-base-sm);
   line-height: var(--leading-body);
   letter-spacing: var(--tracking-sm);
   color: var(--text-secondary);
+  max-width: var(--measure);
+  text-wrap: pretty;
 }
 
 .project__bullets {
@@ -268,11 +287,13 @@
   align-content: start;
 }
 
-/* 大卡内部：背景与贡献并排，把横向空间用起来 */
+/* 大卡内部：背景与贡献并排，把横向空间用起来。
+   比例从 0.85:1.15 收到 1:1 —— 原比例下左栏只有约 250px，
+   中文正文会掉到 17 字/行的碎行（实测）。1:1 后左栏约 300px 以上。 */
 @media (min-width: 48rem) {
   .project--lead .project__expand-grid {
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-7);
   }
 }
 

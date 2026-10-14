@@ -180,20 +180,18 @@ function ProjectCard({ project, lead = false }: { project: Project; lead?: boole
       style={{ '--project-accent': accent } as CSSProperties}
     >
       <div ref={expandRef} className="project__root">
-        {/* 抽象身份图形：纯 CSS 几何，主色取 --project-accent */}
-        <ProjectFigure figure={figure} size={lead ? 'lg' : 'sm'} />
+        <div className="project__row">
+          {/* 抽象身份图形：纯 CSS 几何，主色取 --project-accent */}
+          <ProjectFigure figure={figure} size={lead ? 'lg' : 'sm'} />
 
-        <div className="project__body">
-          <div className="project__head">
-            {lead ? <p className="label project__flag">重点作品</p> : null}
-            <h3 className="project__title">{project.title}</h3>
-            <p className="project__tagline">{project.tagline}</p>
-          </div>
+          <div className="project__body">
+            <div className="project__head">
+              {lead ? <p className="label project__flag">重点作品</p> : null}
+              <h3 className="project__title">{project.title}</h3>
+              <p className="project__tagline">{project.tagline}</p>
+            </div>
 
-          {/* 大卡的展开区默认可见 —— 它就是"详情就地展开"的默认状态 */}
-          {lead ? <ProjectMore project={project} id={detailId} dense={false} /> : null}
-
-          <div className="project__facts">
+            <div className="project__facts">
             <MetricRow metrics={project.metrics} />
           </div>
 
@@ -235,8 +233,13 @@ function ProjectCard({ project, lead = false }: { project: Project; lead?: boole
             </div>
           </div>
 
-          {!lead ? <ProjectMore project={project} id={detailId} dense /> : null}
+          </div>
         </div>
+
+        {/* 展开区移出 .project__body，让它横跨整张卡片 ——
+            留在 body 里的话只拿到 62% 宽度，双栏各约 285px，
+            中文正文会碎成 19 字/行。 */}
+        <ProjectMore project={project} id={detailId} dense={!lead} />
       </div>
     </GlassCard>
   )
