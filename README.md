@@ -158,6 +158,22 @@ BASE_PATH=/buyi/ npm run build
 
 不改也不影响页面本身，只是分享预览可能缺图。
 
+### 工作流里的版本选择
+
+`.github/workflows/deploy.yml` 用的是各 action 的当前 major（`checkout@v7`、
+`setup-node@v7`、`configure-pages@v6`、`upload-pages-artifact@v5`、`deploy-pages@v5`）。
+升级 major 前应核对两件事，否则可能出现"CI 挂了但本地没事"：
+
+1. **该 major 的破性变更**。例如 `setup-node` v7 改了 `NODE_AUTH_TOKEN` 行为并迁到 ESM，
+   但那只影响「发布到 registry」（`registry-url` + `npm publish`）；
+   本项目只做构建部署，不受影响。
+2. **运行时要求**。上列 action 现均要求 `node24`，`ubuntu-latest` 满足。
+
+`cache: npm` 保持启用的前提是**仓库提交了 `package-lock.json`**——
+缓存键由 lockfile 生成；没有 lockfile 的仓库必须关掉缓存，否则缓存不可复现。
+
+`node-version` 写 `'22'` 而不是裸的 `22`，避免浮动到 22.x 的任意 minor。
+
 ### 仓库初始化（首次）
 
 **首选：跑部署脚本**（把登录之后的动作都固化了，不必记参数）：
