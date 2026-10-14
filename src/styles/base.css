@@ -45,25 +45,28 @@ body {
     color var(--dur-slow) var(--ease-in-out);
 }
 
-/* 背景光斑层：玻璃要有东西可折射。固定在视口，内容在其上滚动 */
+/* 背景：一道极淡的网格，作为全页唯一的底层肌理。
+   为什么用网格而不是光斑：网格是「档案纸/图纸」的语汇，与"法律卷宗 + 工程"
+   的品类自然贴合；而紫蓝弥散圆晕是 AI 生成页面的通用噪声，不携带任何信息。
+   网格线压在 --grid-line（约 4% 不透明度）上，只在近看时可见，
+   给纯色底一点空间感，不抢内容。
+   注意：它必须够淡，否则会和正文抢注意力 —— 改这个值前先截图复核。 */
 body::before {
   content: '';
   position: fixed;
-  inset: -20vmax;
+  inset: 0;
   z-index: -2;
   pointer-events: none;
-  background:
-    radial-gradient(42vmax 42vmax at 18% 12%, var(--aura-1), transparent 62%),
-    radial-gradient(38vmax 38vmax at 82% 22%, var(--aura-2), transparent 60%),
-    radial-gradient(46vmax 46vmax at 62% 88%, var(--aura-3), transparent 64%);
-  opacity: var(--aura-opacity);
-  filter: blur(28px) saturate(120%);
-  transition: opacity var(--dur-slow) var(--ease-in-out);
-  /* 光斑自身极缓漂移，让玻璃"活"着；降低动态时由 --motion-scale 关掉 */
-  animation: aura-drift 48s var(--ease-in-out) infinite alternate;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  /* 从左上到右下渐隐：避免整屏均匀网格造成的"表格感" */
+  mask-image: radial-gradient(120% 90% at 30% 0%, #000 35%, transparent 78%);
+  -webkit-mask-image: radial-gradient(120% 90% at 30% 0%, #000 35%, transparent 78%);
 }
 
-/* 极缓漂移：48s 一程，远低于 0.2Hz 的闪烁阈值，不引起不适 */
+/* 极缓漂移的 keyframes 保留给卡片视觉使用（见 work.css 的几何图形） */
 @keyframes aura-drift {
   from {
     transform: translate3d(0, 0, 0) scale(1);

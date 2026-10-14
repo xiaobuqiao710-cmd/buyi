@@ -29,7 +29,7 @@ const CHROME_CANDIDATES = [
 const TARGETS = [
   // 选择器,             角色,         最小字号, 行宽下限, 行宽上限
   ['.hero__title', '展示字', null, null, null],
-  ['.hero__headline', '副标题', null, null, null],
+  ['.hero__statement', '副标题', null, null, null],
   ['.hero__intro', '正文', 16, 24, 40],
   ['.section__lead', '正文', 16, 24, 40],
   ['.project__tagline', '正文', 15, 24, 40],

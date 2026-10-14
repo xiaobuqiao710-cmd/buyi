@@ -131,11 +131,22 @@
   --bg-elevated: #101018;
   --bg-sunken: #06060a;
 
-  /* 背景光斑：玻璃要"折射"的东西，没有它就只是灰 */
-  --aura-1: rgba(88, 122, 255, 0.5);
-  --aura-2: rgba(186, 104, 255, 0.36);
-  --aura-3: rgba(52, 211, 190, 0.24);
-  --aura-opacity: 0.85;
+  /* 背景光斑：已弃用。
+     原先这里是紫蓝弥散的发光圆晕（rgba(88,122,255,.5) 蓝 + rgba(186,104,255,.36) 紫，
+     28px 模糊），正是 AI 生成页面的典型样貌 —— oil-ui 的反模式清单原文点名：
+     「AI 与开发者工具：黑色背景、紫蓝发光弥散圆晕、浮空粒子与千篇一律的胶囊按钮。」
+     同时它对内容没有任何贡献（不指向任何信息），属于「没有贡献的元素」。
+     保留变量名是为了让旧引用不报错，取值改为 transparent，任何引用都不可见。
+     页面层次改由「排版 + 一道极淡的网格」承担，见 base.css 的 body::before。 */
+  --aura-1: transparent;
+  --aura-2: transparent;
+  --aura-3: transparent;
+  --aura-opacity: 0;
+
+  /* 底层网格肌理：替代原光斑层，给纯色底一点空间感。
+     深色下用白线极低不透明度，浅色下用黑线。 */
+  --grid-line: rgba(255, 255, 255, 0.038);
+  --grid-size: 88px;
 
   /* 玻璃材质 —— 三层：底色 + 高光顶边 + 描边 */
   --glass-bg: rgba(255, 255, 255, 0.055);
@@ -186,10 +197,14 @@
   --bg-elevated: #ffffff;
   --bg-sunken: #eeeef3;
 
-  --aura-1: rgba(70, 108, 255, 0.34);
-  --aura-2: rgba(158, 84, 240, 0.24);
-  --aura-3: rgba(20, 178, 158, 0.18);
-  --aura-opacity: 0.9;
+  /* 背景光斑已弃用，同深色主题的说明 */
+  --aura-1: transparent;
+  --aura-2: transparent;
+  --aura-3: transparent;
+  --aura-opacity: 0;
+
+  --grid-line: rgba(18, 18, 26, 0.045);
+  --grid-size: 88px;
 
   --glass-bg: rgba(255, 255, 255, 0.62);
   --glass-bg-strong: rgba(255, 255, 255, 0.78);
@@ -256,7 +271,6 @@
     --blur-card: 0px;
     --blur-chrome: 0px;
     --blur-hero: 0px;
-    --aura-opacity: 0;
   }
   :root[data-theme='light'] {
     --glass-bg: rgba(255, 255, 255, 0.98);
@@ -268,7 +282,6 @@
     --blur-card: 0px;
     --blur-chrome: 0px;
     --blur-hero: 0px;
-    --aura-opacity: 0;
   }
 }
 

@@ -111,7 +111,7 @@ const PROBE_FN = `(() => {
 
   const SEL = [
     ['h1 / hero title', '.hero__title'],
-    ['hero headline', '.hero__headline'],
+    ['hero headline', '.hero__statement'],
     ['hero intro', '.hero__intro'],
     ['hero eyebrow', '.hero__eyebrow'],
     ['nav link', '.topnav__link'],
