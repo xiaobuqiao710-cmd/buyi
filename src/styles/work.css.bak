@@ -1,0 +1,714 @@
+/* ============================================================================
+   work.css — AI 项目作品集（Co-located CSS）
+   所有颜色 / 间距 / 圆角 / 时长 / 模糊半径均来自 tokens.css，无裸值
+   （mask 里的 #000 是键盘，不是颜色选择，按约定例外）。
+
+   动效纪律：只动 transform / opacity / filter / background / grid-template-rows。
+   绝不碰 width / height / top / left / margin —— 展开时布局不受影响，不抖。
+
+   展开机制（Apple §3 可中断 + §4 两参数弹簧）：
+     .project__expand 是 grid，行高解算由 --project-expand 在 0fr → 1fr 之间插值。
+     进度值由 spring.ts 的 springValue 从**当前呈现值**驱动，所以展开中途再点
+     不会跳、不会撞"砖墙"。0fr 时内层被裁掉，但**不进 Tab 序列也无所谓**：
+     内层只有文本，没有可聚焦控件，收起状态下键盘不会落进来。
+   ========================================================================= */
+
+/* ============================================================================
+   本区块局部几何令牌
+   图形是"抽象艺术"不是界面，它的点径/阵距/描线宽度无法从 spacing 标度推导，
+   所以在这里集中声明一次，之后所有图形规则只引用这些名字 —— 文件里不再出现
+   散落的魔法数字。发丝线统一走 --hairline（与 glass.css 的 1px 边框同源）。
+   ========================================================================= */
+.work {
+  --hairline: 1px;
+  --work-line: var(--hairline); /* 图形描线：与边框同粗，读起来是同一套语言 */
+  --work-grid-dot: 2px; /* 节点阵的圆点直径 */
+  --work-grid-cell: 25%; /* 四格阵距：四列，与 --nodes 的四 Agent 同构 */
+  --work-module-col: 12.5%; /* 模组阵列列距：八列 */
+  --work-module-row: 25%; /* 模组阵列行距：四行 */
+  --work-bar-w: 3px; /* 竖条宽度 */
+  --work-bar-pitch: 9%; /* 竖条间距（含条宽） */
+}
+
+/* ------------------------------------------------------------ 区块骨架 */
+
+.work__list {
+  display: grid;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* 网格项允许收缩，防止长英文/长技术栈名撑破并排布局 */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 48rem) {
+  .work__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* 条目之间不再靠底色区分，纵向间距可以收紧 —— 分隔线已经承担了分组 */
+    gap: 0 var(--space-8);
+  }
+  /* 大卡横跨整行 —— 破坏 2×2 的规整，重点自然凸显 */
+  .work__item--lead {
+    grid-column: 1 / -1;
+  }
+}
+
+.work__item {
+  min-width: 0;
+  display: flex;
+}
+
+.work__item > * {
+  width: 100%;
+}
+
+/* ------------------------------------------------------------ 卡片本体 */
+
+.project {
+  /* 卡片被 <li> 包着，需要让上下形态拉伸填满行高 */
+  width: 100%;
+  padding: var(--space-6);
+  /* 图形与展开区都靠这个进度值联动 */
+  --project-expand: 0;
+}
+
+.project__root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  height: 100%;
+  min-width: 0;
+}
+
+/* 行容器：窄屏纵向堆叠（图形在上、文字在下），宽屏才分栏。
+   展开区不在这一层里 —— 它挂在 .project__root 下、.project__row 之后，
+   这样无论哪种形态都能横跨整张卡片的宽度（留在 body 内只拿到 62%）。 */
+.project__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* 大卡：宽屏下左右分栏，文字在左、抽象视觉在右并撑满 */
+@media (min-width: 62rem) {
+  .project--lead {
+    padding: var(--space-7);
+  }
+  /* 大卡：标记在左（固定小尺寸），正文在右占满剩余宽度。
+     标记不再是一块拉伸的视觉面板 —— 它是档案页边的记号，
+     让它占据 34% 宽度并撑满高度，等于又把它变回了"主视觉"。 */
+  .project--lead .project__row {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+  .project--lead .project__body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .project--lead .project__figure {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    /* 与标题的视觉顶端对齐，而不是与行盒顶端对齐 —— 标记读起来像盖在标题旁的章 */
+    margin-top: 0.15rem;
+  }
+}
+
+.project__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+/* ------------------------------------------------------------ 文字层级 */
+/* 目标：标题 / 导语 / 正文 / 标签四级，绝不出现"卡片里所有字一样大" */
+
+.project__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.project__flag {
+  color: var(--project-accent, var(--accent));
+  /* label 类已是全大写小标签，这里只改颜色，不改字号 */
+}
+
+.project__title {
+  font-size: var(--text-h3);
+  line-height: var(--leading-heading);
+  letter-spacing: var(--tracking-h3);
+  /* 标题用 semibold 压住信息密度 */
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+
+/* 大卡标题再上一级：它是这一屏的第一眼 */
+.project--lead .project__title {
+  font-size: var(--text-h2);
+  letter-spacing: var(--tracking-h2);
+  line-height: var(--leading-heading);
+}
+
+.project__tagline {
+  /* 卡片副标题承担正文阅读职责，字号不能低于 15px。
+     行宽**不再套 --measure** —— 实测 54ch（494px）只占大卡正文栏（964px）的 51%，
+     于是标题铺满整栏、导语换行在前半、标签又铺满：三行右边缘参差，正是"看着不齐"的来源。
+     实测校准：汉字约 14.98px 宽（该字号下），
+       494px（原 54ch）= 33 字 → 只占 964px 正文栏的 51%，右边缘比标题短一半，看着不齐；
+       704px（44rem）= 47 字 → 被 qa-typography 判为过宽（>40 字，易串行）。
+     取 38.5rem ≈ 38 字/行：既与标题/标签的右边缘接近，又落在 40 字上限内。
+     这是一个被 QA 闸门纠回来的改动 —— 原先我直接放开到 44rem，脚本报 47 字过宽。 */
+  font-size: var(--text-base-sm);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+  max-width: 38.5rem;
+}
+
+.project__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* 展开区里的小节标题：比正文重、比卡片标题小 —— 不抢标题，但能分块 */
+.project__block-title {
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.project__background {
+  /* 与 .project__tagline 同为「承担阅读职责」的正文，字号不得低于 15px。
+     不限宽：实测展开区两栏各 518px，而 --measure 是 494px —— 只差 24px，
+     限宽几乎不起作用，却让左栏文字比右栏短一截，两栏右边缘对不齐（与导语同一个毛病）。
+     两栏本身已是窄栏（约 30 字/行），无需再收。 */
+  font-size: var(--text-base-sm);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-sm);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+
+.project__bullets {
+  /* .bullets 已给 --text-sm 与短横线；这里只压一下与上一块的间距 */
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ 指标与标签 */
+
+.project__facts {
+  /* 用一条上分隔线代替嵌套玻璃面（浅玻璃叠浅玻璃会让可读性崩） */
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+
+.project--compact .project__facts {
+  /* 紧凑卡指标别把行撑爆 */
+  padding-top: var(--space-3);
+}
+
+.project__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  /* 推到卡片底部：同一行的卡片按钮对齐 */
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--divider);
+}
+
+.project__tech {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.project__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+}
+
+/* 展开指示箭头：随进度旋转，是"按了会有东西出来"的方向提示（Apple §8） */
+.project__toggle-icon {
+  display: inline-flex;
+  transform: rotate(calc(var(--project-expand) * 180deg));
+}
+
+.project__link {
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------ 就地展开
+   行高用 grid-template-rows，但**不能**写 calc(var(--x) * 1fr)：
+   CSS 不允许把 fr 乘以一个数，整条声明会被解析器丢弃，grid 回退到 auto，
+   结果是"永远展开"——卡片高度虚高且按钮点了没反应。这是本项目踩过的坑。
+   正确做法：0fr ↔ 1fr 两个离散值，由 [data-open] 切换；
+   行高的插值交给浏览器自己的 fr 过渡，opacity/transform 仍由弹簧进度驱动。
+   内层必须 min-height: 0，否则 grid 子项压不到 0，行高会被顶回去。 */
+
+.project__expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  /* 收起时不该接住指针事件 */
+  pointer-events: none;
+  transition: grid-template-rows var(--dur-deliberate) var(--ease-out);
+}
+
+[data-open='true'] .project__expand {
+  grid-template-rows: 1fr;
+  pointer-events: auto;
+}
+
+.project__expand-inner {
+  /* grid 子项在 0fr 时必须允许被压到 0，否则会把行高顶回去 */
+  min-height: 0;
+  overflow: hidden;
+  opacity: var(--project-expand);
+  /* 位移用 rem，与字号一起缩放（尊重用户的动态字号设置） */
+  transform: translate3d(0, calc(var(--space-3) * (1 - var(--project-expand))), 0);
+}
+
+/* reduced-motion：行高不做过场，直接切换 */
+@media (prefers-reduced-motion: reduce) {
+  .project__expand {
+    transition-duration: var(--dur-instant);
+  }
+}
+
+.project__expand-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  /* 从顶部开始排，展开过程中内容是"露出来"而不是"被推下来" */
+  align-content: start;
+}
+
+/* 大卡内部：背景与贡献并排，把横向空间用起来。
+   比例从 0.85:1.15 收到 1:1 —— 原比例下左栏只有约 250px，
+   中文正文会掉到 17 字/行的碎行（实测）。1:1 后左栏约 300px 以上。 */
+@media (min-width: 48rem) {
+  .project--lead .project__expand-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-7);
+  }
+}
+
+/* 紧凑卡展开区紧跟在操作行之后：间距交给 .project__body 的 gap，不在这里动 margin
+   （margin 会参与布局，展开时任何 margin 变化都会引起回流；统一由 gap 承担）。 */
+
+/* ============================================================================
+   项目标记 —— 取代原先的「抽象视觉」
+   原来每张卡顶部有一块 16:7 的渐变面板（径向光 + 模糊光晕 + mix-blend-mode），
+   那是 AI 生成页面的通用样貌，而且占掉卡片约四成面积却不承载任何信息 ——
+   属于「用大渐变顶替必要图像」。
+   现在改成左侧一枚小尺寸的**单色几何标记**：只用描边、不用填充渐变，
+   颜色取 --project-accent 的描边 + 纸面底色，像档案页边盖的编号章。
+   信息量不变（仍然一项目一图形），但重量从"主视觉"降到"记号"。
+   ========================================================================= */
+
+.project__figure {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  /* 不加底色、不加描边外框 —— 它是一枚印在纸上的记号，不是一个容器 */
+  border: none;
+  background: transparent;
+  isolation: isolate;
+  flex: 0 0 auto;
+}
+
+/* 大卡：标记放在标题左侧，尺寸固定，不跟着卡片拉伸 */
+.project__figure--lg {
+  width: 5.5rem;
+  height: 5.5rem;
+}
+
+.project__figure--sm {
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.project__shape {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 统一用描边色，低不透明度；形状之间靠几何区分，不靠颜色堆叠 */
+.project__shape--a,
+.project__shape--b {
+  color: var(--project-accent, var(--accent));
+  opacity: 0.85;
+}
+
+/* 第三层（原光晕）在新方案里没有位置 —— 光晕是渐变装饰的本体，
+   直接不渲染。保留选择器是为了让旧的 JSX 结构不必改。 */
+.project__shape--c {
+  display: none;
+}
+
+/* 呼吸动效保留，但幅度更小：它是"活着的记号"，不是浮动的主视觉 */
+.project__shape--b {
+  animation: project-breathe 9s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes project-breathe {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, calc(-0.28rem * var(--motion-scale)), 0);
+  }
+}
+
+/* 各图形改为描边几何 —— 用 currentColor + mask，避免逐项目写死色值 */
+
+/* ① nodes —— 四个节点 + 连线（四 Agent 互相校验） */
+.project__figure--nodes .project__shape--a {
+  inset: 14%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  opacity: 0.9;
+}
+
+.project__figure--nodes .project__shape--b {
+  inset: 30%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  background:
+    linear-gradient(currentColor, currentColor) center / 1.5px 50% no-repeat,
+    linear-gradient(currentColor, currentColor) center / 50% 1.5px no-repeat;
+  opacity: 0.7;
+}
+
+/* ② grid —— 模组化方格阵列，其中一格实心 */
+.project__figure--grid .project__shape--a {
+  inset: 14%;
+  background-image: linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px);
+  background-size: 33.33% 33.33%;
+  opacity: 0.55;
+}
+
+.project__figure--grid .project__shape--b {
+  left: 47%;
+  top: 47%;
+  width: 20%;
+  height: 20%;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+/* ③ pipeline —— 五级阶梯 + 一条贯通基线 */
+.project__figure--pipeline .project__shape--a {
+  left: 12%;
+  right: 12%;
+  bottom: 26%;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.project__figure--pipeline .project__shape--b {
+  left: 12%;
+  right: 12%;
+  bottom: 26%;
+  height: 58%;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 1.5px,
+    transparent 1.5px 20%
+  );
+  mask-image: linear-gradient(to top, #000 0 12%, transparent 12% 24%, #000 24% 36%,
+    transparent 36% 48%, #000 48% 60%, transparent 60% 72%, #000 72% 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 0 12%, transparent 12% 24%,
+    #000 24% 36%, transparent 36% 48%, #000 48% 60%, transparent 60% 72%, #000 72% 100%);
+  opacity: 0.85;
+}
+
+/* ④ bars —— 疏密变化的竖条（排期节奏） */
+.project__figure--bars .project__shape--a {
+  left: 14%;
+  right: 14%;
+  top: 18%;
+  bottom: 18%;
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 2px,
+    transparent 2px 14%
+  );
+  opacity: 0.8;
+}
+
+.project__figure--bars .project__shape--b {
+  left: 14%;
+  right: 14%;
+  bottom: 24%;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+/* ⑤ rings —— 同心环（归档回库） */
+.project__figure--rings .project__shape--a {
+  inset: 12%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  opacity: 0.85;
+}
+
+.project__figure--rings .project__shape--b {
+  inset: 32%;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-pill);
+  opacity: 0.6;
+}
+
+/* ============================================================================
+   无障碍降级 —— 三档都要有明确回应
+   ========================================================================= */
+
+/* ① 降低动态：弹簧在 JS 侧已直接落终值，这里把"最终可见性"钉死，
+      任何情况下展开内容都不会因为进度值停在 0 而看不见。 */
+@media (prefers-reduced-motion: reduce) {
+  .project__expand,
+  [data-open='true'] .project__expand {
+    grid-template-rows: 1fr;
+  }
+  .project__expand-inner {
+    opacity: 1;
+    transform: none;
+  }
+  .project__figure,
+  .project__figure:hover {
+    filter: none;
+  }
+  .project__shape--a,
+  .project__shape--b {
+    animation: none;
+  }
+}
+
+/* ② 降低透明度：令牌已把 --blur-* 归零。图形不能靠模糊光晕撑场，
+      改用描边与更高的不透明度读形状。 */
+@media (prefers-reduced-transparency: reduce) {
+  .project__figure {
+    background-image: none;
+    background: var(--glass-bg-subtle);
+    border-color: var(--glass-border-strong);
+  }
+  .project__shape--c {
+    display: none;
+  }
+  .project__shape--a {
+    opacity: 1;
+  }
+  .project__shape--b {
+    opacity: 0.75;
+  }
+  /* 实底之后玻璃不再"saturate"，图形自己补回饱和 */
+  .project__figure,
+  .project:hover .project__figure {
+    filter: none;
+  }
+}
+
+/* ③ 提高对比：实底 + 明确描边 + 图形加重。
+      contrast:more 下阴影不再承担层次（令牌已把 --shadow-glass 设为 none），
+      分隔线换成强描边值。 */
+@media (prefers-contrast: more) {
+  .project__facts,
+  .project__foot {
+    border-top-color: var(--divider-strong);
+  }
+  .project__figure {
+    border-color: var(--glass-border-strong);
+    background-image: none;
+    background: var(--glass-bg-subtle);
+  }
+  .project__shape--a,
+  .project__shape--b {
+    opacity: 1;
+  }
+  .project__shape--c {
+    display: none;
+  }
+  .project__tagline,
+  .project__background,
+  .project__block-title {
+    color: var(--text-secondary);
+  }
+}
+
+/* ------------------------------------------------------------ 打印 */
+
+@media print {
+  .work__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .project__figure,
+  .project__shape,
+  .project__toggle {
+    display: none;
+  }
+  .project {
+    border: 1px solid currentColor;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    break-inside: avoid;
+  }
+  .project__expand {
+    grid-template-rows: 1fr;
+  }
+  .project__expand-inner {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------ 窄屏兜底 */
+
+/* 极窄屏（320px）：单列、图形收矮、按钮满宽，不出现横向溢出 */
+@media (max-width: 26rem) {
+  .project {
+    padding: var(--space-5);
+  }
+  .project__figure--lg,
+  .project__figure--sm {
+    aspect-ratio: 16 / 4;
+    min-height: 4.5rem;
+  }
+  .project__actions {
+    width: 100%;
+  }
+  .project__actions > * {
+    flex: 1 1 auto;
+  }
+  .project__foot {
+    justify-content: stretch;
+  }
+}
+
+/* ============================================================================
+   方向 A 修正：项目不做成「盒子」，做成「条目」
+
+   问题：把玻璃换成白底面板后，大卡变成一整块白色平板（白底压在近白页面上），
+   内容浮在里面，卡片本身不承担任何信息 —— 这正是要改掉的「卡片套卡片」。
+
+   改法：项目退化成有编号的档案条目，条目之间用一条细线分隔，
+   与首屏的装订线同一套语汇。大卡不再有底色与四周描边，只保留上下分隔线。
+   交互反馈（上浮）随之取消 —— 条目不应该整块浮起来，那还在暗示"我是卡片"。
+   ========================================================================= */
+
+/* 条目化：去掉圆角边框，改为上下细线 */
+.project {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--divider);
+  border-radius: 0;
+  /* 与首屏 .container 左缘对齐，让页面上所有内容共用同一根版心线 */
+  padding: var(--space-6) 0;
+}
+
+/* 最后一个条目补下边线，让整组条目首尾都有界 */
+.work__item:last-child .project {
+  border-bottom: 1px solid var(--divider);
+}
+
+@media (min-width: 62rem) {
+  .project--lead {
+    padding: var(--space-7) 0;
+  }
+}
+
+/* 取消整块上浮：条目不是卡片，不应有"悬浮"暗示。
+   按下反馈保留（pointer-down 立刻响应，Apple §1），但它只作用于内部按钮。 */
+.project.panel-card--interactive:hover,
+.project.panel-card--interactive:active {
+  transform: none;
+  border-color: var(--divider);
+}
+
+/* 指针跟随高光对条目也不合适（整块发光会破坏纸面感），关掉 */
+.project.panel-glow::after {
+  display: none;
+}
+
+/* ============================================================================
+   真实界面截图 —— 展开区里的「证据位」
+
+   卡面那枚单色记号回答的是「这是哪个项目」，这张图回答的是「它真的在跑」。
+   两者职责不同：记号是识别，截图是证据。所以截图只在展开后出现，
+   且只有确有真实截图的项目才有 —— 没有的项目不补画，假图比没有更糟。
+   ========================================================================= */
+
+/* 展陈语汇（莫奈 M3）：截图是**被展出的作品**，不是贴进档案的附件。
+
+   与首屏同一套逻辑 —— 首屏那幅莫奈有装裱白边与展签，项目截图也如此：
+   画框底色 + 内衬留白 + 阴影，下方一条短横线接展签式说明。
+   换成这个语汇之前，截图只是"左边一道竖线的附件"，
+   与首屏的画作待遇不一致，整页少了那层呼应。 */
+.project__shot {
+  margin: var(--space-6) 0 0;
+  max-width: 46rem;
+}
+
+/* 画框：底色 + 内衬 + 阴影。用 --bg-elevated 而不是纯白，
+   因为深色主题下纯白画框会刺眼；浅色主题下 --bg-elevated 本就是白。 */
+.project__shot-frame {
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 1px 0 var(--divider), 0 18px 40px -20px rgba(0, 0, 0, 0.36);
+}
+
+.project__shot-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1px;
+}
+
+/* 展签：一条短横线 + 说明，与首屏画作的展签同构 */
+.project__shot-caption {
+  position: relative;
+  margin-top: var(--space-4);
+  padding-left: calc(var(--space-6) + var(--space-2));
+  font-size: var(--text-xs);
+  line-height: var(--leading-ui);
+  color: var(--text-tertiary);
+  text-wrap: pretty;
+}
+.project__shot-caption::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: var(--space-6);
+  height: 1px;
+  background: var(--divider-strong);
+}
+
+/* 窄屏：画框内衬收窄，给内容留出横向空间 */
+@media (max-width: 40rem) {
+  .project__shot {
+    max-width: none;
+    padding-top: var(--space-5);
+    border-left: none;
+    border-top: 1px solid var(--divider-strong);
+  }
+}

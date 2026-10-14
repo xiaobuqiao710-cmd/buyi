@@ -156,14 +156,20 @@
 }
 
 .project__tagline {
-  /* 卡片副标题承担正文阅读职责，字号不能低于 15px；行宽同时收进 --measure，
-     否则 14px 的小字拉满卡片宽会到 43 字/行，既难读又和区块导语的节奏打架。 */
+  /* 卡片副标题承担正文阅读职责，字号不能低于 15px。
+     行宽**不再套 --measure** —— 实测 54ch（494px）只占大卡正文栏（964px）的 51%，
+     于是标题铺满整栏、导语换行在前半、标签又铺满：三行右边缘参差，正是"看着不齐"的来源。
+     实测校准：汉字约 14.98px 宽（该字号下），
+       494px（原 54ch）= 33 字 → 只占 964px 正文栏的 51%，右边缘比标题短一半，看着不齐；
+       704px（44rem）= 47 字 → 被 qa-typography 判为过宽（>40 字，易串行）。
+     取 38.5rem ≈ 38 字/行：既与标题/标签的右边缘接近，又落在 40 字上限内。
+     这是一个被 QA 闸门纠回来的改动 —— 原先我直接放开到 44rem，脚本报 47 字过宽。 */
   font-size: var(--text-base-sm);
   line-height: var(--leading-body);
   letter-spacing: var(--tracking-sm);
   color: var(--text-secondary);
   text-wrap: pretty;
-  max-width: var(--measure);
+  max-width: 37rem;
 }
 
 .project__block {
@@ -183,14 +189,13 @@
 
 .project__background {
   /* 与 .project__tagline 同为「承担阅读职责」的正文，字号不得低于 15px。
-     曾经取消过 .measure，原因是展开区被限制在 62% 的 body 栏内，单栏仅约 285px，
-     套上限没有意义。现已把展开区移出 body 横跨整卡，双栏各约 500px，
-     所以这里重新加上 --measure 约束，避免长行走宽。 */
+     不限宽：实测展开区两栏各 518px，而 --measure 是 494px —— 只差 24px，
+     限宽几乎不起作用，却让左栏文字比右栏短一截，两栏右边缘对不齐（与导语同一个毛病）。
+     两栏本身已是窄栏（约 30 字/行），无需再收。 */
   font-size: var(--text-base-sm);
   line-height: var(--leading-body);
   letter-spacing: var(--tracking-sm);
   color: var(--text-secondary);
-  max-width: var(--measure);
   text-wrap: pretty;
 }
 
@@ -686,7 +691,7 @@
   font-size: var(--text-xs);
   line-height: var(--leading-ui);
   color: var(--text-tertiary);
-  max-width: var(--measure);
+  text-wrap: pretty;
 }
 .project__shot-caption::before {
   content: '';
