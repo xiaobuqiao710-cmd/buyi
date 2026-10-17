@@ -253,6 +253,19 @@ function ProjectCard({ project, lead = false }: { project: Project; lead?: boole
                   {project.link.label}
                 </a>
               ) : null}
+
+              {/* 源码入口。与线上站并存：能点开跑的站点对招聘方更有说服力，
+                  公开源码则是可信度背书，两者不该二选一。 */}
+              {project.repo ? (
+                <a
+                  className="btn btn--ghost btn--sm project__link"
+                  href={project.repo.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  {project.repo.label}
+                </a>
+              ) : null}
             </div>
           </div>
 
