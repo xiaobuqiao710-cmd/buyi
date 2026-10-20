@@ -30,26 +30,22 @@ jobs:
           # 反过来，若某个仓库没有 lockfile 就必须关掉缓存（官方文档：
           # 缓存键依赖 lockfile，无 lockfile 时缓存不可复现）。
           cache: npm
+          # 实际构建的是 planet/ 子项目，缓存键要指向它自己的 lockfile
+          cache-dependency-path: planet/package-lock.json
 
-      # npm ci 用 package-lock.json 精确还原依赖，比 npm install 更可复现
-      - run: npm ci
-
-      - name: Typecheck
-        run: npx tsc -b
-
-      # 关键：项目站点部署在 https://<用户>.github.io/<仓库名>/，
-      # 资源必须挂在这个子路径下，否则 CSS/JS 会 404（页面白屏、无样式）。
-      # 这里由 GitHub 自己提供仓库名，不写死，改仓库名也不用改配置。
-      - name: Build
-        run: npm run build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
+      # 部署产物改为 planet/（小王子 3D 星球版）；原「纸本档案」版源码仍在仓库根目录，
+      # 需要回滚时把这里换回原来的 npm run build 即可。
+      - name: Build (planet)
+        run: |
+          cd planet
+          npm ci
+          npm run build
 
       - uses: actions/configure-pages@v6
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: planet/dist
 
   deploy:
     needs: build

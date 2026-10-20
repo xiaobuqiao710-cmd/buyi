@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>宋建豪 · 一颗住着人的小星球</title>
+    <meta
+      name="description"
+      content="宋建豪的个人主页：法律专业能力 × AI Agent 工程实践。一颗可以拖着看的小星球，上面有五个自己做的系统、两段实习、一所学校，和一只邮筒。"
+    />
+    <meta name="theme-color" content="#0b1723" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <canvas id="stage" aria-hidden="true"></canvas>
+    <div id="markers" aria-hidden="true"></div>
+
+    <header class="masthead">
+      <p class="masthead__eyebrow">
+        <span>SONG JIANHAO</span><i></i><span>北京</span>
+      </p>
+      <h1 class="masthead__name">宋建豪</h1>
+      <p class="masthead__headline">法律专业能力 × AI Agent 工程实践</p>
+      <p class="masthead__intro">
+        在红圈与精品所的证券、IPO 项目里做检索与文书；同时把这条工作流拆开、重建成可复用的 AI Agent 系统。
+      </p>
+      <div class="masthead__links">
+        <a href="mailto:1829260561@qq.com">1829260561@qq.com</a>
+        <a id="resume-link" href="./resume/宋建豪-简历.pdf" target="_blank" rel="noreferrer">简历 PDF ↗</a>
+      </div>
+    </header>
+
+    <nav class="dock" aria-label="星球上的四个地点">
+      <button class="dock__item" type="button" data-section="work">
+        <span class="dock__no">01</span><span class="dock__label">AI 项目</span>
+      </button>
+      <button class="dock__item" type="button" data-section="experience">
+        <span class="dock__no">02</span><span class="dock__label">法律经历</span>
+      </button>
+      <button class="dock__item" type="button" data-section="education">
+        <span class="dock__no">03</span><span class="dock__label">教育荣誉</span>
+      </button>
+      <button class="dock__item" type="button" data-section="contact">
+        <span class="dock__no">04</span><span class="dock__label">联系</span>
+      </button>
+    </nav>
+
+    <div class="sunset">
+      <button id="sunset-btn" class="sunset__btn" type="button" aria-live="off">
+        <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2" fill="currentColor" />
+          <g stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+            <path d="M12 2.4v2.2M12 19.4v2.2M2.4 12h2.2M19.4 12h2.2M5.2 5.2l1.6 1.6M17.2 17.2l1.6 1.6M18.8 5.2l-1.6 1.6M6.8 17.2l-1.6 1.6" />
+          </g>
+        </svg>
+        <span class="sunset__text">看一次日落</span>
+        <span class="sunset__count" id="sunset-count">0 / 44</span>
+      </button>
+    </div>
+
+    <p class="hint" id="hint">拖动旋转 · 滚轮缩放 · 点亮一处登上去</p>
+
+    <aside class="panel" id="panel" aria-hidden="true" role="dialog" aria-labelledby="panel-title">
+      <button class="panel__close" id="panel-close" type="button" aria-label="回到星球">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+        </svg>
+        <span>回到星球</span>
+      </button>
+      <div class="panel__scroll" id="panel-body"></div>
+    </aside>
+
+    <div class="footnote" id="footnote" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="fallback">
+        <h1>宋建豪 · 法律专业能力 × AI Agent 工程实践</h1>
+        <p>这个页面用三维方式展示履历，需要开启 JavaScript。你也可以直接来信：1829260561@qq.com</p>
+      </div>
+    </noscript>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
