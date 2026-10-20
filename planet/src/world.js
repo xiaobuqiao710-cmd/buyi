@@ -656,6 +656,11 @@ function createContactCluster(lat, lon) {
 
 /* ------------------------------------------------------------------ 组装 */
 
+/** 供调试与测试用的表面点：经纬度 → 世界坐标（未乘根节点变换） */
+export function surfPoint(lat, lon, r = PLANET_R) {
+  return surf(lat, lon, r)
+}
+
 export function createWorld(scene) {
   const { sky, uniforms } = createSky(scene)
   const stars = createStars(scene)

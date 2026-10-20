@@ -10,8 +10,26 @@
     />
     <meta name="theme-color" content="#0b1723" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content="宋建豪 · 一颗住着人的小星球" />
+    <meta property="og:description" content="法律专业能力 × AI Agent 工程实践。五间亮着窗的小屋、两座灯塔、一棵树、一只邮筒。" />
+    <meta property="og:url" content="https://xiaobuqiao710-cmd.github.io/buyi/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "宋建豪",
+        "alternateName": "Song Jianhao",
+        "email": "mailto:1829260561@qq.com",
+        "address": { "@type": "PostalAddress", "addressLocality": "北京" },
+        "alumniOf": { "@type": "CollegeOrUniversity", "name": "北京大学" },
+        "knowsAbout": ["法律检索", "IPO", "证券合规", "AI Agent 工程"]
+      }
+    </script>
   </head>
   <body>
+    <div id="veil" aria-hidden="true"></div>
     <canvas id="stage" aria-hidden="true"></canvas>
     <div id="markers" aria-hidden="true"></div>
 
@@ -24,6 +42,11 @@
       <p class="masthead__intro">
         在红圈与精品所的证券、IPO 项目里做检索与文书；同时把这条工作流拆开、重建成可复用的 AI Agent 系统。
       </p>
+      <div class="masthead__actions">
+        <button class="tour" id="tour-btn" type="button" aria-pressed="false">
+          <span class="tour__dot"></span>带我逛一圈
+        </button>
+      </div>
       <div class="masthead__links">
         <a href="mailto:1829260561@qq.com">1829260561@qq.com</a>
         <a id="resume-link" href="./resume/宋建豪-简历.pdf" target="_blank" rel="noreferrer">简历 PDF ↗</a>

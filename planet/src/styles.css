@@ -764,6 +764,94 @@ details li + li {
 
 /* -------------------------------------------------------------- 窄屏 */
 
+/* ------------------------------------------------------ 揭幕 / 巡览 / 引导 */
+
+#veil {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: var(--night);
+  pointer-events: none;
+  transition: opacity 0.9s ease 0.1s;
+}
+
+body.is-loaded #veil {
+  opacity: 0;
+}
+
+.masthead__actions {
+  margin-top: 22px;
+}
+
+/* 巡览键：文字 + 一颗会呼吸的小点，不用胶囊 */
+.tour {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 0 4px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgb(247 240 222 / 0.26);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.tour:hover,
+.tour[aria-pressed="true"] {
+  color: var(--saffron);
+  border-color: rgb(231 178 92 / 0.7);
+}
+
+.tour__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--saffron);
+  box-shadow: 0 0 0 0 rgb(231 178 92 / 0.55);
+}
+
+.tour[aria-pressed="true"] .tour__dot {
+  animation: tourPulse 1.9s ease-out infinite;
+}
+
+@keyframes tourPulse {
+  0% { box-shadow: 0 0 0 0 rgb(231 178 92 / 0.55); }
+  70% { box-shadow: 0 0 0 7px rgb(231 178 92 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(231 178 92 / 0); }
+}
+
+/* 标签上的箭头：只在"真的指向它"时出现，平时不喧哗 */
+.marker__go {
+  font-style: normal;
+  color: var(--saffron);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.marker:hover .marker__go,
+.marker:focus-visible .marker__go,
+.marker.is-hot .marker__go {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 巡览进行时：把"可点的目录"让位给"正在发生的镜头" */
+body.is-touring .masthead,
+body.is-touring .dock {
+  opacity: 0.28;
+  transition: opacity 0.5s ease;
+}
+
+body.is-touring .masthead:hover,
+body.is-touring .dock:hover {
+  opacity: 1;
+}
+
 @media (max-width: 900px) {
   .masthead {
     left: 20px;
