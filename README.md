@@ -1,300 +1,91 @@
 # 宋建豪 · 个人主页
 
-法律 × AI 的个人作品集站点。定位是**一个真实的、可交互的工程产物**，而不是一份被搬到网页上的简历——
-内容以 AI 项目为主，法律经历与教育背景作为支撑。
+法律 × AI 的个人主页。线上：**https://xiaobuqiao710-cmd.github.io/buyi/**
 
-线上地址：`https://<用户名>.github.io/buyi/`（仓库名 `buyi`）
-
----
-
-## 技术选型与取舍
-
-**只用 React + Vite + TypeScript，运行时零依赖。**
-
-这不是为了炫技。招聘场景下评审者可能在任意网络环境打开页面，所以：
-
-- **没有动画库**（Framer Motion / GSAP 等）。弹簧动效是自己写的一个 130 行解析解内核（`src/lib/spring.ts`），
-  因为它需要满足一个具体约束：**掉帧和后台标签页暂停时不能累积误差**。
-  数值积分做不到这点，解析解可以——给定任意 `t` 直接算出位置，与帧率完全解耦。
-- **没有 CSS 框架**。设计令牌集中在一个文件（`src/styles/tokens.css`），
-  颜色、字号、间距、弹簧参数都是变量，改一处全站生效。
-- **没有图标库**。用到的图标以内联 SVG 组件形式写在用它的地方。
-
-产物：JS ~179 kB（gzip ~62 kB）+ CSS ~52 kB（gzip ~10 kB）。
-
-### 关于 `npm audit` 的 2 条告警
-
-`npm ci` 会报 `2 vulnerabilities (1 moderate, 1 high)`，指向 `esbuild <= 0.24.2`
-（经 `vite <= 6.4.2` 传递依赖）。**不要为此跑 `npm audit fix --force`**——
-它会把 vite 升到 8.x，是破坏性升级。
-
-判断依据（实测，不是推测）：
-
-- 该漏洞（[GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99)）的描述是
-  「esbuild 的开发服务器允许任意网站向其发起请求并读取响应」，影响面是 **dev server**。
-- 本站部署的是 `vite build` 出的静态 `dist/`，**不含 dev server**。
-- 实测 `dist/` 产物里 `esbuild` 与 `vite` 出现次数均为 **0**。
-- `dependencies` 只有 `react` / `react-dom`，这两个没有已知漏洞；
-  esbuild 与 vite 都在 `devDependencies`。
+> 这个仓库现在有两个版本的源码：**`planet/` 是当前线上版**（《小王子》3D 星球）；
+> 根目录的 `src/` 是上一版「纸本档案」（React 版），保留下来可回滚，**不再参与构建**。
 
 ---
 
-## 设计语言：纸本档案
+## 当前线上版：一颗可以拖着看的小星球
 
-整页只有一种隐喻：**一份有编号的档案**。首屏右侧一条装订线（01–05）是它的脊柱；
-往下每个区块都由细线分隔的条目构成，而不是一张张浮动的卡片。
+把作品集做成一颗星球：地面是程序化生成的（`IcosahedronGeometry(2.4, 5)`，约 2 万个三角面，叠加噪声位移与顶点色），
+天上 1500 颗星、一层渐变天空、一圈大气边缘光。星球上散着四个地点，正好对应四站内容：
 
-关键判断（都有具体依据，不是审美偏好）：
+| 地点 | 对应内容 | 为什么是它 |
+|---|---|---|
+| 五间亮着窗的小屋 | AI 项目（5 个） | 每个项目一间屋子，五个都还亮着灯 |
+| 两座灯塔 | 实习经历（2 段） | 一次非诉的 IPO 尽调，一次证券监管下的争议 |
+| 一棵树和一块石碑 | 教育荣誉 | 树根底下压着一块写字的石碑 |
+| 一只邮筒 | 联系方式 | 想聊，写信比投简历快 |
 
-- **液态玻璃只用在控件层。** 抓取 apple.com.cn 的真实首屏可以看到，
-  Apple 的玻璃只出现在按钮与工具条上，从不作为装饰铺在内容面上。
-  把每段内容装进浮空玻璃会造出多个与正文无关的视觉重心，也压低了文字可读性。
-  因此内容面用 `.panel`（纸面 + 一道细边），`.glass` 只留给导航与抽屉。
-- **不用紫蓝弥散光斑。** 原实现的背景是 28px 模糊的蓝紫径向光（`--aura-1/2/3`），
-  这正是「AI 与开发者工具」类页面的通用样貌，且对内容零贡献。
-  底层肌理改为一道约 4% 不透明度的网格 —— 语汇是档案纸，不是发光。
-- **不用渐变文字。** 强调用单色 + 字重；渐变会让对比度随位置浮动，不利于无障碍复核。
-- **项目标记是记号，不是主视觉。** 每卡顶部原有一块 16:7 的渐变面板，
-  占卡片约四成面积却零信息量；现改为小尺寸单色描边记号（大卡 5.5rem）。
-- **条目，不是盒子。** 项目、经历、教育、技能四处原本都是圆角卡片。
-  底色变浅之后，白卡压在近白页面上会退化成一整块"什么都不做的平板"——
-  内容浮在里面，卡片只贡献了一条边框。现改为**上下细线分隔的条目**，
-  与首屏装订线共用同一套语汇；同时取消整块 hover 上浮，
-  因为条目不该暗示"我是一张会浮起来的卡片"。
+另有一只狐狸、一朵玫瑰、一架绕圈的飞机，和「看一次日落」按钮——按一次，太阳往下走一点，计数到 44 为止。
 
-### 中文排版的三条硬约束
+### 交互
 
-这三条是用 `scripts/qa-typography.mjs` 量出来的，不是估的：
+- **指哪去哪**：拖拽旋转、滚轮缩放；点星球上的景物（或它的标签）就进那一站，再点一次收起来。
+- **「带我逛一圈」**：四站自动巡览，每站 5.6 秒配一句话；鼠标一碰或按 Esc 立刻让位给手动。
+- **键盘全通**：`1–4` 直达、`←/→` 相邻一站、`T` 巡览、`Esc` 回星球、`Tab` 在面板内循环。
+  打开面板时焦点落在关闭键上，关掉之后焦点回到触发它的那个按钮。
+- **URL 可分享**：`#work` / `#experience` / `#education` / `#contact`，深链直接落到那一站，浏览器前进后退也跟着走。
+- **手机**：上下滑一格 = 下一站/上一站；窄屏换一套机位，星球当"地平线"用。
+- **降级**：系统开了「减少动态效果」就不推镜头（只切内容）；`<noscript>` 有静态兜底。
 
-| 约束 | 原因 | 取值 |
-| --- | --- | --- |
-| 行宽 | `ch` 是数字 `0` 的宽度，**一个汉字约占 1.58ch**，照拉丁文习惯写的 `68ch` 在中文里等于 43 字/行 | `--measure: 54ch`（≈34 字/行） |
-| 行高 | 汉字字面率大、笔画密，拉丁文海报式的 `1.02` 会上下相撞 | 展示字 `--leading-display: 1.14`，正文 `--leading-body: 1.72` |
-| 正文字号 | 承担连续阅读职责的文字不小于 15px；12–14px 只用于标签与控制 | `--text-base-sm: 0.9375rem` |
+### 技术选型与取舍
 
-### Apple 动效规则（可验证的部分）
+**运行时只依赖 `three`**，没有 React、没有动画库、没有组件库，所有动效都是每帧对 `rig` 做阻尼插值。
 
-| 规则 | 落地位置 |
-| --- | --- |
-| 按下即反馈（不等抬起） | 所有按钮 `:active` 立即缩放，用 `--dur-instant` |
-| 动效可中断 | `springValue()` 的 `retarget()` 读取**当前位置与速度**作为新起点，中途反向不跳变 |
-| X/Y 独立弹簧 | `springAxes()` 分轴驱动，单弹簧会让二维运动失同步 |
-| 速度交接 | `VelocityTracker` 保留最近 100 ms 样本，手势结束时把速度交给弹簧 |
-| 动量投影 | `project(v)` 用 `d ≈ 0.998` 预测滑动终点，而不是"滑多远算多远" |
-| 边界回弹 | `rubberband()` 阻尼公式，越界越难拉 |
-| 材质与深度 | 模糊分级 `--blur-chip/card/chrome/hero`；材料出现时 blur 与 scale 同动 |
+- **为什么不用滚动叙事**：这是个给人看履历的页面，不是演示片。镜头只在被要求时才动。
+- **为什么拆成六个文件**：第一版把相机、面板 DOM、标签投影、键盘、深链全塞在 `main.js`（509 行），
+  改一处要读全篇。现在按职责分开，`main.js` 只剩 261 行编排：
 
-### 无障碍三项降级
+| 文件 | 行数 | 职责 |
+|---|---|---|
+| `src/world.js` | 843 | 星球、星空、角色、地标 —— 场景的真相都在这里 |
+| `src/content.js` | 245 | 唯一内容真源（项目数字、经历、四个地点的经纬度） |
+| `src/main.js` | 261 | 编排：渲染器、指针、拾取、循环、启动 |
+| `src/nav.js` | 209 | 站点切换的唯一入口 + 巡览 + 键盘 + 历史 + 手势 |
+| `src/panel.js` | 143 | 面板 HTML、开关、焦点圈定 |
+| `src/markers.js` | 89 | 标签投影、贴边与遮挡隐藏 |
+| `src/camera.js` | 77 | 机位与阻尼（`focusOn/release/advance/place/snap`）|
+| `src/state.js` | 23 | 调试开关、`prefers-reduced-motion`、少量共享状态 |
 
-三条系统偏好都在 CSS 层切断，不靠 JS 判断：
+- **一处几何上的坑**：球面上让物体"立起来"，不能只按法线摆——低纬度处法线近乎水平，
+  灯塔会读成一根横杆。`placeOn(obj, lat, lon, r, 'upright')` 的做法是把世界上方投影到切平面当 up，
+  相当于给每个物体一片重力对齐的斜坡。
 
-- `prefers-reduced-motion` → 时长压缩到瞬时，`--motion-scale: 0` 令所有位移归零
-- `prefers-reduced-transparency` → 面板转实底、边框加重，所有 `backdrop-filter` 归零
-- `prefers-contrast: more` → 近实底 + 加重文字 + 强调描边
+### 体积
 
-另有 `@supports not (backdrop-filter: ...)` 兜底，老浏览器得到不透明卡片而不是糊掉的半透明块。
+`npm run build` 产物：JS **507 kB（gzip 135 kB）** + CSS **12.6 kB（gzip 3.6 kB）**。
+其中绝大部分是 three 本身；Vite 会对 >500 kB 的 chunk 告警一次，属于预期。
 
----
+### 部署
 
-## 本地开发
+GitHub Pages 走 Actions（`.github/workflows/deploy.yml`）：`cd planet && npm ci && npm run build`，
+产物目录 `planet/dist`。本地是 `cd planet && npm install && npm run dev`。
 
-```bash
-npm install
-npm run dev        # http://localhost:5180
-```
+### 还没做的
 
-| 命令 | 作用 |
-| --- | --- |
-| `npm run dev` | 开发服务器 |
-| `npm run build` | 类型检查 + 生产构建到 `dist/` |
-| `npm run preview` | 预览构建产物（端口 4180） |
-| `npm run typecheck` | 只跑 `tsc -b` |
-| `npm run qa` | 渲染 QA：对比度 + 结构/ARIA/溢出 |
-| `npm run qa:type` | 排版 QA：中文行宽/行高/字号
-| `npm run qa:all` | 上面两支一起跑 |
+- 44/44 满档日落态只在 11/44 中途截过图，没做完整验收；
+- 「减少动态效果」只在代码里分支，没做真机回归；
+- CI 里没有截图 QA（本地是 `planet/scripts/qa-shot.mjs`，直连 Chrome DevTools 协议截稳定帧）。
 
 ---
 
-## 渲染 QA
+## 上一版：纸本档案（React，保留可回滚）
 
-两支脚本都用 CDP 驱动**真实 Chrome**，不引入 Puppeteer 之类的依赖。
-任一检查不达标即以非零码退出，所以可以直接当提交前的闸门用。
+根目录的 `src/`、`scripts/`、`vite.config.ts` 是上一版源码：React 18 + Vite 5 + TypeScript，运行时零依赖，
+设计语言是「纸本档案」——夜蓝底、纸面卡片、宋体标题，液态玻璃只用在控件层。
 
-```bash
-npm run preview &            # 先起一个本地服务
-npm run qa                   # 对比度（15 项 WCAG）+ 结构/ARIA/溢出
-npm run qa:type              # 中文排版（行宽/行高/字号）
-npm run qa -- --shots        # 额外把截图写到 .qa-shots/（已 gitignore）
-```
+那一版的验收方式值得一提：不用"看起来还行"，而是用真实 Chrome 读计算样式，逐项检查
+15 处文本对比度（WCAG AA）、26 个键盘可达元素的焦点环、以及中文排版的字/行比例；
+另外还自查了 `npm audit` 的 2 条 esbuild 告警——影响面是 dev server，静态 `dist/` 里 esbuild 与 vite 出现次数均为 0。
 
-**这两个脚本是验证过的闸门，不是安慰剂。** 往 `src/styles/tokens.css` 里注入故障
-实测过它们的反应：把浅色主题的 `--text-primary` 改成 `#d8d8e0`，对比度脚本报出
-7 处不足（含 `hero__title` 1.33:1）并额外指出「主题自相矛盾」；
-把 `--leading-body` 改成 `1.02`，排版脚本报出 5 处正文行高过紧。两者都退出码 1。
-
-**一个必须知道的坑**：headless Chrome 的 `--virtual-time-budget` **不推进 CSS 动画时钟**，
-入场动画会永久停在 `opacity: 0`。直接截图会得到"空白页面"的假象——
-这不是页面坏了。QA 脚本为此在截图前显式把动画推进到终态。
-
-**另一个坑（构建产物不能混用）**：`BASE_PATH` 不同的两份 `dist` 不可互换——
-不带 `BASE_PATH` 构建出的产物引用 `/assets/…`，带 `BASE_PATH=/buyi/` 的引用 `/buyi/assets/…`。
-拿后者用根路径服务器打开会整页 404，症状是"`#root` 为空、主内容过少"，
-很容易被误读成组件坏了。两支 QA 脚本都会先读 `dist/index.html` 里实际的资源前缀，
-与被测 URL 比对，不一致就直接退出并打印该敲的命令。
+**回滚**：把 `.github/workflows/deploy.yml` 的 Build 步骤换回 `npm ci && npm run build`、
+`upload-pages-artifact` 的 `path` 改回 `dist` 即可。
 
 ---
 
-## 内容维护
+## 许可
 
-**所有文案与数字只在 `src/data/content.ts` 里改**，组件不写死任何内容。
-文件顶部的维护约定：
-
-- 项目按 `featured` 排序，数字越小越靠前
-- 每个项目必须至少有一个 metric（可验证的数字），否则不该出现在站点上
-- `tech` 只写真的用到的，不为了好看堆词
-- 站点上的每个数字都必须能回溯到简历或项目本身——**不写不可验证的绝对化表述**
-
-简历 PDF 放在 `public/resume/`，链接经 `assetUrl()` 处理以适配 GitHub Pages 子路径。
-
----
-
-## 部署
-
-推到 `main` 分支即由 GitHub Actions 自动构建部署（`.github/workflows/deploy.yml`）。
-
-**项目站点部署在 `/<仓库名>/` 子路径下**，所以构建时的 `base` 必须是 `/buyi/`，
-否则所有资源会 404、页面白屏。工作流里用 `github.event.repository.name` 动态取仓库名，
-改仓库名不需要改配置；本地构建则通过 `BASE_PATH` 环境变量覆盖：
-
-```bash
-BASE_PATH=/buyi/ npm run build
-```
-
-同样地，`public/` 下的资源（简历 PDF、favicon）**不能写相对路径**——
-相对路径会从站点根解析。统一走 `assetUrl()`。
-
-### 部署后要改的一处（可选）
-
-`index.html` 里的 `og:image` 用的是 `%BASE_URL%og.png`（相对站点根）。
-微信、飞书、钉钉在抓取预览时**不解析相对路径**，若发现分享卡片没有图，
-把这两行换成绝对地址即可：
-
-```html
-<meta property="og:image" content="https://<用户名>.github.io/buyi/og.png" />
-<meta name="twitter:image" content="https://<用户名>.github.io/buyi/og.png" />
-```
-
-不改也不影响页面本身，只是分享预览可能缺图。
-
-### 工作流里的版本选择
-
-`.github/workflows/deploy.yml` 用的是各 action 的当前 major（`checkout@v7`、
-`setup-node@v7`、`configure-pages@v6`、`upload-pages-artifact@v5`、`deploy-pages@v5`）。
-升级 major 前应核对两件事，否则可能出现"CI 挂了但本地没事"：
-
-1. **该 major 的破性变更**。例如 `setup-node` v7 改了 `NODE_AUTH_TOKEN` 行为并迁到 ESM，
-   但那只影响「发布到 registry」（`registry-url` + `npm publish`）；
-   本项目只做构建部署，不受影响。
-2. **运行时要求**。上列 action 现均要求 `node24`，`ubuntu-latest` 满足。
-
-`cache: npm` 保持启用的前提是**仓库提交了 `package-lock.json`**——
-缓存键由 lockfile 生成；没有 lockfile 的仓库必须关掉缓存，否则缓存不可复现。
-
-`node-version` 写 `'22'` 而不是裸的 `22`，避免浮动到 22.x 的任意 minor。
-
-### 仓库初始化（首次）
-
-**首选：跑部署脚本**（把登录之后的动作都固化了，不必记参数）：
-
-```bash
-gh auth login          # 一次性，必须由人完成
-bash scripts/deploy.sh # 默认仓库名 buyi；也可 bash scripts/deploy.sh 其他名字
-```
-
-脚本会依次：校验登录 → 校验工作区干净 → 校验必需文件（含简历 PDF）→
-本地 `tsc -b` + `npm run build` 先证明能构建 → 建仓并推送 →
-打印 Pages 开关命令与站点地址。任一步失败都会停下并说明原因。
-
-**手动等价操作**：
-
-```bash
-gh repo create buyi --public --source=. --push
-```
-
-然后在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**
-（或 `gh api -X POST repos/<用户名>/buyi/pages -f build_type=workflow`）。
-
-**为什么需要人登录一次**：本机不存在任何可用 GitHub 凭证
-（`gh` 未登录、无 `GH_TOKEN`、无 SSH 密钥、无 credential helper），
-所以这一步无法自动化 —— 但登录之后的所有动作都已固化进脚本。
-
----
-
-## 目录结构
-
-```
-src/
-  data/content.ts        内容真源（文案、数字、排序）
-  lib/
-    spring.ts            弹簧内核（解析解、动量投影、回弹、速度追踪）
-    useReveal.ts         滚动入场（IntersectionObserver）
-    usePointerGlow.ts    指针跟随高光（仅精确指针 + 允许动效时启用）
-    useParallax.ts       装饰层视差
-    useTheme.ts          主题切换（localStorage 持久化）
-    useScrolled.ts       滚动状态（rAF 节流）
-  styles/
-    tokens.css           设计令牌唯一真源 + 三项无障碍降级
-    base.css             重置、光斑背景、颗粒层、排版
-    glass.css            控件层玻璃 + 内容面板 .panel
-    components.css       按钮、区块头、指标行等共享件
-    {chrome,hero,work,journey,contact}.css
-  components/
-    ui/Kit.tsx           共享原语（Section/Button/PanelCard/GlassCard/MetricRow…）
-    layout/Chrome.tsx    导航 + 页脚 + 移动端抽屉
-    sections/            Hero / Work / Journey / Contact
-```
-
-### 真实界面截图 vs 抽象记号
-
-每个项目在卡面上有一枚**单色描边记号**（nodes / grid / pipeline / bars / rings），
-职责是「一眼区分这是哪个项目」；而在展开详情里，**确实有真实界面截图的项目**
-会多一张截图 + 一句说明，职责是「证明它真的在跑」。
-
-两者不互相替代：记号保证卡面整齐、可扫读；截图保证可信度。
-没有真实截图的项目**不补画抽象图充数** —— 假图比没有更糟。
-
-截图放在 `public/shots/`，同样经 `assetUrl()` 拼接以适配子路径部署。
-素材来自项目真实运行界面，按显示尺寸导出为 JPEG（单张 ≤ 170KB）。
-
-### QA 的前置约束：构建产物的 base 必须与被测 URL 配对
-
-`vite build` 的 `base` 来自 `BASE_PATH`，所以 **dist 是分两种的**：
-
-| 构建命令 | dist 里的资源前缀 | 必须用哪种服务器打开 |
-| --- | --- | --- |
-| `npm run build` | `/assets/…` | 根路径，如 `http://localhost:4180/` |
-| `BASE_PATH=/buyi/ npm run build` | `/buyi/assets/…` | 挂在 `/buyi/` 下的服务器 |
-
-**两者不能混用。** 把 `/buyi/` 产物用根路径服务器打开，所有 JS/CSS 一律 404、
-页面一片空白 —— 而 QA 脚本会把这误报成「缺少 `<main>`」「主内容文本过少」，
-让人去查根本不存在的组件问题（这个坑实际踩过一次）。
-
-因此 `qa-render.mjs` 与 `qa-typography.mjs` 都会先读 `dist/index.html` 里资源的
-实际前缀，与被测 URL 的路径比对；不一致就直接退出（退出码 2）并打印该敲的命令，
-而不是产出一堆误导性的失败项。
-
-### 无障碍三降级的实测值
-
-三条降级都用 `Emulation.setEmulatedMedia` 强制媒体特性后读过 computed style，
-不是"写了就算"（其中一条曾因 CSS 覆盖而静默失效，见下）：
-
-| 媒体特性 | 实测变化（深色主题） |
-| --- | --- |
-| `prefers-reduced-motion: reduce` | `--motion-scale` `1 → 0`（位移归零、只留淡入）、`--dur-base` `.22s → .12s` |
-| `prefers-reduced-transparency: reduce` | `--surface-panel` `rgba(255,255,255,.032) → #14141c`、`--blur-chrome` `34px → 0px`、`--glass-bg` 变近乎不透明 |
-| `prefers-contrast: more` | `--divider` `.08 → .3`（3.75×）、`--text-primary` `#f5f5f7 → #ffffff`、`--accent` 加深 |
-
-**踩过的坑**：`--motion-scale` 的默认值一度同时声明在 `tokens.css` 与 `base.css`。
-`base.css` 后加载，两处选择器同为 `:root`（特异性相同），无条件的那条永远获胜，
-于是 reduced-motion 块里的 `0` 被覆盖 —— 降级静默失效，位移照常发生。
-现在默认值只留在 `tokens.css`（唯一真源），并在 `base.css` 留注释说明为什么不能在那里声明。
+MIT，见 [LICENSE](./LICENSE)。
