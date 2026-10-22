@@ -21,21 +21,25 @@
 
 另有一只狐狸、一朵玫瑰、一架绕圈的飞机，和「看一次日落」按钮——按一次，太阳往下走一点，计数到 44 为止。
 
-### 六颗星球：一份内容，六种天空
+### 六个世界：一份内容，六种天地
 
-同一份履历可以住在不同的世界里。入口在首页左下角的「换一颗星球 →」，
+同一份履历可以住在不同的世界里。入口在首页左下角的「换一个世界 →」，
 画廊页：**https://xiaobuqiao710-cmd.github.io/buyi/themes.html**
 
-| 主题 | 链接 | 世界长什么样 |
-|---|---|---|
-| 小王子 `prince` | `?theme=prince` | 沙地、玫瑰、狐狸、五间亮窗小屋（默认） |
-| 永冬之境 `frost` | `?theme=frost` | 雪原、冰塔、冰拱门，冷蓝的天 |
-| 魔法学院 `arcane` | `?theme=arcane` | 石塔、大礼堂、浮空蜡烛，深绿的草坪 |
-| 沙海双月 `dune` | `?theme=dune` | 橙红沙海、风蚀石拱、两颗月亮 |
-| 巨树之下 `verdant` | `?theme=verdant` | 巨树与蘑菇屋、萤火虫 |
-| 夜航站 `neon` | `?theme=neon` | 金属星球、青色起降环、琥珀灯 |
+| 主题 | 链接 | 世界形态 | 长什么样 |
+|---|---|---|---|
+| 小王子 `prince` | `?theme=prince` | **球**（半径 2.4 的星球） | 沙地、玫瑰、狐狸、五间亮窗小屋（默认） |
+| 永冬之境 `frost` | `?theme=frost` | 雪原（地平线） | 冰塔、冰拱门，冷蓝的天，雪一直铺到远处 |
+| 魔法学院 `arcane` | `?theme=arcane` | 三层同心石台地 | 石塔、大礼堂、浮空蜡烛 |
+| 沙海双月 `dune` | `?theme=dune` | 沙海（地平线） | 橙红沙丘、风蚀石拱、两颗月亮 |
+| 巨树之下 `verdant` | `?theme=verdant` | 浮空草岛 + 倒锥岩体 | 巨树与蘑菇屋、萤火虫 |
+| 夜航站 `neon` | `?theme=neon` | 悬浮金属平台 | 青色灯环、两条跑道、琥珀灯窗 |
 
-主题只决定**天空配色、星场、地形三色与起伏、大气、灯光、地标和活动的东西**；
+**只有小王子那颗是球**，其余五套各有自己的「地」——它们不是换配色，是换了一整套地形与法线规则：
+`world.kind` 取 `planet / plain / dune / terrace / island / platform`，
+引擎据此决定是造球体还是造一张带淡出边缘的地形网格，`place` 里的经纬度在平地上会被映射成「极坐标半径 + 方位角」。
+
+主题只决定**世界形态、天空配色、星场、地形四色与起伏、大气、灯光、地标和活动的东西**；
 四站内容、相机、面板、标签、键盘、深链全部由同一套引擎处理，所以换主题不改交互。
 
 ```js
@@ -46,15 +50,20 @@ export default {
   stars: { count, size, hue, hueRange, sat, opacity },
   terrain: { base, patch, high, low, amp, rough },
   atmosphere: '#a9d4ee',
-  lights: { sun, fillSky, fillGround, rim, sunIntensity, fillIntensity, rimIntensity, ambient },
-  build({ root, place, camDir }) { /* 摆地标，return { anchors, update } */ },
+  lights: { sun, duskSun, fillSky, fillGround, rim, front, sunIntensity, fillIntensity, rimIntensity, ambient, ambientColor },
+  world: { kind: 'plain', radius: 26, spread: 5.4, scale: 1.25, camera: { dist, focusDist, phi, lookY } },
+  build({ root, place, camDir, put }) { /* 摆地标，return { anchors, update } */ },
 }
 ```
 
-加一颗新星球只要三步：复制一个现有主题改配色与 `build()` → 在 `src/themes/index.js` 的 `THEMES` 里注册 → 在 `themes.html` 加一张卡。
+加一个世界只要三步：复制一个现有主题改 `world` / 配色 / `build()` → 在 `src/themes/index.js` 的 `THEMES` 里注册 → 画廊页会自动多一张卡。
 
 **版权口径**：所有场景由代码生成，不使用任何原作模型、贴图、角色形象、商标或字体；
 主题名与英文名全部自撰，只做配色、剪影与氛围的「致敬」。仓库里没有一件外部素材。
+
+**当成模板复用**：这套结构已封装成 DSH 技能 `world-themes-3d`（`~/.dsh/skills/world-themes-3d/`），
+里面带一份 `starter/` 完整工程（本篇源码的精简副本）、主题契约、加主题五步与五个真实踩坑。
+想让别人照抄成自己的站点，直接拷 `starter/` 改 `src/content.js` 即可。
 
 ### 交互
 
