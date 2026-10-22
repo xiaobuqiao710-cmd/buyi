@@ -2,7 +2,7 @@
 
 法律 × AI 的个人主页。线上：**https://xiaobuqiao710-cmd.github.io/buyi/**
 
-> 这个仓库现在有两个版本的源码：**`planet/` 是当前线上版**（《小王子》3D 星球）；
+> 这个仓库现在有两个版本的源码：**`planet/` 是当前线上版**（3D 星球，六种主题）；
 > 根目录的 `src/` 是上一版「纸本档案」（React 版），保留下来可回滚，**不再参与构建**。
 
 ---
@@ -20,6 +20,41 @@
 | 一只邮筒 | 联系方式 | 想聊，写信比投简历快 |
 
 另有一只狐狸、一朵玫瑰、一架绕圈的飞机，和「看一次日落」按钮——按一次，太阳往下走一点，计数到 44 为止。
+
+### 六颗星球：一份内容，六种天空
+
+同一份履历可以住在不同的世界里。入口在首页左下角的「换一颗星球 →」，
+画廊页：**https://xiaobuqiao710-cmd.github.io/buyi/themes.html**
+
+| 主题 | 链接 | 世界长什么样 |
+|---|---|---|
+| 小王子 `prince` | `?theme=prince` | 沙地、玫瑰、狐狸、五间亮窗小屋（默认） |
+| 永冬之境 `frost` | `?theme=frost` | 雪原、冰塔、冰拱门，冷蓝的天 |
+| 魔法学院 `arcane` | `?theme=arcane` | 石塔、大礼堂、浮空蜡烛，深绿的草坪 |
+| 沙海双月 `dune` | `?theme=dune` | 橙红沙海、风蚀石拱、两颗月亮 |
+| 巨树之下 `verdant` | `?theme=verdant` | 巨树与蘑菇屋、萤火虫 |
+| 夜航站 `neon` | `?theme=neon` | 金属星球、青色起降环、琥珀灯 |
+
+主题只决定**天空配色、星场、地形三色与起伏、大气、灯光、地标和活动的东西**；
+四站内容、相机、面板、标签、键盘、深链全部由同一套引擎处理，所以换主题不改交互。
+
+```js
+// src/themes/<id>.js —— 一个主题就是一个对象
+export default {
+  id, name, nameEn, homage, blurb, swatch: [4 色],
+  sky: { top, mid, bottom },
+  stars: { count, size, hue, hueRange, sat, opacity },
+  terrain: { base, patch, high, low, amp, rough },
+  atmosphere: '#a9d4ee',
+  lights: { sun, fillSky, fillGround, rim, sunIntensity, fillIntensity, rimIntensity, ambient },
+  build({ root, place, camDir }) { /* 摆地标，return { anchors, update } */ },
+}
+```
+
+加一颗新星球只要三步：复制一个现有主题改配色与 `build()` → 在 `src/themes/index.js` 的 `THEMES` 里注册 → 在 `themes.html` 加一张卡。
+
+**版权口径**：所有场景由代码生成，不使用任何原作模型、贴图、角色形象、商标或字体；
+主题名与英文名全部自撰，只做配色、剪影与氛围的「致敬」。仓库里没有一件外部素材。
 
 ### 交互
 
