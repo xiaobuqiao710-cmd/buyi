@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>换一颗星球 · 宋建豪</title>
+    <meta name="description" content="六颗可以走上去的星球：小王子、永冬之境、魔法学院、沙海双月、巨树之下、夜航站。" />
+    <meta name="theme-color" content="#0b1723" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --sky: #0b1723;
+        --text: rgb(247 240 222);
+        --dim: rgb(247 240 222 / 0.62);
+        --faint: rgb(247 240 222 / 0.34);
+        --saffron: #e7b25c;
+        --rule: rgb(247 240 222 / 0.14);
+        --serif: "Songti SC", "Noto Serif SC", "STSong", "SimSun", serif;
+        --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+        --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; }
+      body {
+        min-height: 100vh;
+        background: radial-gradient(120% 90% at 70% 0%, #14293c 0%, #0b1723 45%, #070f18 100%);
+        color: var(--text);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+        padding: 56px clamp(20px, 6vw, 96px) 80px;
+      }
+      header { max-width: 980px; margin: 0 auto 44px; }
+      .kicker {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.22em;
+        color: var(--faint);
+        text-transform: uppercase;
+      }
+      h1 {
+        font-family: var(--serif);
+        font-weight: 500;
+        font-size: clamp(30px, 4.4vw, 46px);
+        letter-spacing: 0.02em;
+        margin: 14px 0 12px;
+      }
+      .lede { max-width: 44em; color: var(--dim); font-size: 14px; line-height: 1.9; margin: 0; }
+      .lede a { color: var(--saffron); text-decoration: none; border-bottom: 1px solid rgb(231 178 92 / 0.4); }
+
+      .grid {
+        max-width: 980px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1px;
+        background: var(--rule);
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+      .card {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: clamp(16px, 3vw, 30px);
+        padding: 22px clamp(4px, 2vw, 14px);
+        text-decoration: none;
+        color: inherit;
+        background: transparent;
+        transition: background 0.35s cubic-bezier(0.22, 0.75, 0.2, 1);
+      }
+      .card:hover, .card:focus-visible {
+        background: rgb(247 240 222 / 0.045);
+        outline: none;
+      }
+      .card:hover .enter, .card:focus-visible .enter { color: var(--saffron); transform: translateX(3px); }
+
+      .chip {
+        width: 78px;
+        height: 78px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1px rgb(247 240 222 / 0.12), 0 10px 30px -18px #000;
+      }
+      .name { font-family: var(--serif); font-size: 21px; letter-spacing: 0.02em; margin: 0 0 4px; }
+      .name small {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        color: var(--faint);
+        margin-left: 10px;
+        text-transform: uppercase;
+      }
+      .blurb { margin: 0 0 6px; color: var(--dim); font-size: 13px; line-height: 1.7; }
+      .meta { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; color: var(--faint); }
+      .enter {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        color: var(--faint);
+        transition: color 0.3s, transform 0.3s;
+        white-space: nowrap;
+      }
+      footer {
+        max-width: 980px;
+        margin: 44px auto 0;
+        color: var(--faint);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        line-height: 2;
+      }
+      footer a { color: var(--dim); text-decoration: none; border-bottom: 1px solid var(--rule); }
+      @media (max-width: 640px) {
+        body { padding: 34px 18px 60px; }
+        .card { grid-template-columns: 58px minmax(0, 1fr); }
+        .chip { width: 56px; height: 56px; }
+        .enter { display: none; }
+        .name { font-size: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="kicker">SIX PLANETS · 宋建豪</p>
+      <h1>换一颗星球</h1>
+      <p class="lede">
+        同一个人的四站内容，可以住在不一样的天空下。每一颗星球都是程序生成的低多边形球体，
+        配色、地形、地标和活动的东西都由主题决定；点任意一颗走上去，内容与交互完全一样。
+      </p>
+    </header>
+
+    <main class="grid">
+      <a class="card" href="./?theme=prince">
+        <span class="chip" style="background: radial-gradient(58% 58% at 36% 30%, #f0e0bd 0%, #d8bf8d 42%, #8d7248 76%, #6d572f 100%)"></span>
+        <span>
+          <span class="name">小王子<small>Le Petit Prince</small></span>
+          <p class="blurb">一颗只有房子那么大的星球，转个身就能看完四十四次日落。</p>
+          <span class="meta">SAND · GRASS · ROSE · FOX</span>
+        </span>
+        <span class="enter">进入 →</span>
+      </a>
+
+      <a class="card" href="./?theme=frost">
+        <span class="chip" style="background: radial-gradient(58% 58% at 36% 30%, #f4fbff 0%, #d6e8f4 40%, #8fb6ce 74%, #5f89a3 100%)"></span>
+        <span>
+          <span class="name">永冬之境<small>Winterhold</small></span>
+          <p class="blurb">雪盖住了一切棱角，只剩冰芯里那点蓝光还亮着。</p>
+          <span class="meta">SNOW · ICE SPIRES · AURORA</span>
+        </span>
+        <span class="enter">进入 →</span>
+      </a>
+
+      <a class="card" href="./?theme=arcane">
+        <span class="chip" style="background: radial-gradient(58% 58% at 36% 30%, #9aa883 0%, #7b8c63 40%, #55663f 76%, #38452c 100%)"></span>
+        <span>
+          <span class="name">魔法学院<small>Arcane Academy</small></span>
+          <p class="blurb">城堡在夜里比白天更像自己：窗口亮着，蜡烛浮在长桌上方。</p>
+          <span class="meta">STONE · LAWN · CANDLES · OWL</span>
+        </span>
+        <span class="enter">进入 →</span>
+      </a>
+
+      <a class="card" href="./?theme=dune">
+        <span class="chip" style="background: radial-gradient(58% 58% at 36% 30%, #f0c690 0%, #d99f5c 40%, #a9662f 76%, #6f3d1a 100%)"></span>
+        <span>
+          <span class="name">沙海双月<small>Two Moons</small></span>
+          <p class="blurb">风把沙推成一整片，两颗月亮在上面走，谁也不着急。</p>
+          <span class="meta">SAND SEA · STONE ARCH · TWO MOONS</span>
+        </span>
+        <span class="enter">进入 →</span>
+      </a>
+
+      <a class="card" href="./?theme=verdant">
+        <span class="chip" style="background: radial-gradient(58% 58% at 36% 30%, #a9c07a 0%, #7d9c56 40%, #3d6b34 76%, #24401f 100%)"></span>
+        <span>
+          <span class="name">巨树之下<small>Under the Great Tree</small></span>
+          <p class="blurb">树比房子大得多，于是所有灯都挂在树上，不再属于某个人。</p>
+          <span class="meta">MOSS · MUSHROOM HOUSES · FIREFLIES</span>
+        </span>
+        <span class="enter">进入 →</span>
+      </a>
+
+      <a class="card" href="./?theme=neon">
+        <span class="chip" style="background: radial-gradient(58% 58% at 36% 30%, #6b7d92 0%, #46586a 40%, #1e3a44 76%, #0d1c24 100%)"></span>
+        <span>
+          <span class="name">夜航站<small>Night Terminal</small></span>
+          <p class="blurb">一颗被航站灯照亮的金属星球，起降指示灯从不熄。</p>
+          <span class="meta">METAL · CYAN · AMBER · SHUTTLES</span>
+        </span>
+        <span class="enter">进入 →</span>
+      </a>
+    </main>
+
+    <footer>
+      所有场景均由代码生成，不使用任何外部模型、贴图或角色素材；主题只做配色、剪影与氛围的致敬。<br />
+      加一颗新星球：写 <code>src/themes/&lt;id&gt;.js</code>，再注册到 <code>src/themes/index.js</code>。<br />
+      <a href="./">← 回到小王子</a>
+    </footer>
+  </body>
+</html>

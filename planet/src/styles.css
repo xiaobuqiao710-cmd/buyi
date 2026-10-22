@@ -978,3 +978,35 @@ body.is-touring .dock:hover {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------ 主题入口：去画廊换一颗星球 */
+.galaxy {
+  position: fixed;
+  left: 74px;
+  bottom: 92px;
+  z-index: 8;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--faint);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease);
+}
+.galaxy:hover,
+.galaxy:focus-visible {
+  color: var(--saffron);
+  border-bottom-color: var(--saffron);
+  outline: none;
+}
+body.is-focus .galaxy,
+body.is-touring .galaxy {
+  opacity: 0;
+  pointer-events: none;
+}
+@media (max-width: 700px) {
+  .galaxy {
+    left: 24px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    font-size: 10px;
+  }
+}

@@ -10,7 +10,9 @@
 import * as THREE from 'three'
 import './styles.css'
 import { SECTIONS, SUNSET_TOTAL } from './content.js'
-import { createWorld, PLANET_R } from './world.js'
+import { createWorld } from './world.js'
+import { PLANET_R, surf } from './world/kit.js'
+import { resolveTheme } from './themes/index.js'
 import * as cam from './camera.js'
 import { createMarkers, planetDisc } from './markers.js'
 import * as nav from './nav.js'
@@ -31,7 +33,13 @@ renderer.toneMappingExposure = 1.08
 
 const scene = new THREE.Scene()
 const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 220)
-const world = createWorld(scene)
+const theme = resolveTheme()
+document.documentElement.dataset.theme = theme.id
+document.documentElement.style.setProperty('--saffron', theme.swatch[2])
+document.documentElement.style.setProperty('--soil', theme.swatch[3])
+document.title = `${theme.name} · 宋建豪`
+
+const world = createWorld(scene, theme)
 
 // 标签的点击在 markers.js 里绑定好了，这里只决定"点了之后去哪一站"
 const markers = createMarkers(world, (id) => nav.activate(id))
@@ -218,7 +226,7 @@ if (isDebug) {
     probe: (lat, lon) => {
       world.root.updateMatrixWorld(true)
       camera.updateMatrixWorld(true)
-      const v = world.surfPoint(lat, lon).applyMatrix4(world.root.matrixWorld)
+      const v = surf(lat, lon).applyMatrix4(world.root.matrixWorld)
       const facing = v.clone().normalize().dot(camera.position.clone().normalize())
       const p = v.clone().project(camera)
       return {
