@@ -5,13 +5,13 @@
  * 配色只取沙漠与黄昏，不做任何作品的角色或道具。
  */
 import * as THREE from 'three'
-import { PLANET_R as R, surf, placeOn, mat, glowMat, tower, arch, rock, lamp, seeded } from '../world/kit.js'
+import { PLANET_R as R, surf, placeOn, mat, glowMat, tower, arch, rock, lamp, seeded, GROUND } from '../world/kit.js'
 
 const anchor = (p, k = 1.2) => surf(p.lat, p.lon, R * k)
 
 function put(g, obj, p, dLat = 0, dLon = 0, mode = 'upright', s = 1.6) {
   // 以「落点」为原点缩放：底边仍贴着球面，只是长得更高更粗，远处才读得出剪影
-  obj.scale.multiplyScalar(s)
+  obj.scale.multiplyScalar(s * GROUND.scale)
   placeOn(obj, p.lat + dLat, p.lon + dLon, R, mode)
   g.add(obj)
   return obj
@@ -33,6 +33,7 @@ function tent({ s = 1, cloth = '#c9863f', trim = '#8c4f26' } = {}) {
 }
 
 export default {
+world: { kind: 'dune', radius: 26, spread: 5.4, scale: 1.3, camera: { dist: 15.0, focusDist: 11.8, phi: 0.28, lookY: 0.8 } },
   id: 'dune',
   name: '沙海双月',
   nameEn: 'Two Moons',

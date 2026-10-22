@@ -13,8 +13,11 @@ export const HOME = NARROW
   ? { theta: 0.96, phi: 0.46, dist: 15.0 }
   : { theta: 0.96, phi: 0.3, dist: 11.0 }
 
-/** 登上某一站时的距离 */
-export const FOCUS_DIST = NARROW ? 12.5 : 10.4
+/** 登上某一站时的距离（会随世界形状改写，所以是 let） */
+export let FOCUS_DIST = NARROW ? 12.5 : 10.4
+
+/** 镜头看向的点：星球是原点，平地要抬高一点，否则能看到地平面在画面正中 */
+export const lookAt = new THREE.Vector3(0, 0, 0)
 
 export const rig = { ...HOME }
 export const goal = { ...HOME }
@@ -65,10 +68,34 @@ export function place(camera) {
     Math.sin(rig.phi) * rig.dist,
     Math.cos(rig.theta) * cp * rig.dist,
   )
-  camera.lookAt(0, 0, 0)
+  camera.lookAt(lookAt)
 }
 
 /** 立刻吸合到目标值：首帧与 ?debug 截图用 */
+/**
+ * 换一种「地」就要换一套机位：星球是绕着看，平地是站在边上看。
+ * 必须在 createWorld 之后调用（引擎要用同一个 world 设定摆东西）。
+ */
+export function applyWorld(world = {}) {
+  const w = world.kind && world.kind !== 'planet' ? world : null
+  if (!w) {
+    Object.assign(HOME, NARROW ? { theta: 0.96, phi: 0.46, dist: 15.0 } : { theta: 0.96, phi: 0.3, dist: 11.0 })
+    Object.assign(rig, HOME)
+    Object.assign(goal, HOME)
+    lookAt.set(0, 0, 0)
+    return
+  }
+  const c = w.camera ?? {}
+  const home = NARROW
+    ? { theta: c.theta ?? 0.96, phi: c.phiNarrow ?? 0.2, dist: c.distNarrow ?? 19 }
+    : { theta: c.theta ?? 0.96, phi: c.phi ?? 0.19, dist: c.dist ?? 15.5 }
+  Object.assign(HOME, home)
+  Object.assign(rig, HOME)
+  Object.assign(goal, HOME)
+  FOCUS_DIST = NARROW ? (c.focusNarrow ?? 15) : (c.focusDist ?? 12.2)
+  lookAt.set(0, c.lookY ?? 0.9, 0)
+}
+
 export function snap() {
   rig.theta = goal.theta
   rig.phi = goal.phi

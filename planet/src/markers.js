@@ -54,8 +54,11 @@ export function createMarkers(world, onPick) {
     // 面板摊开时，右边界要退到面板左边 —— 否则标签会钻到纸页底下
     const focused = document.body.classList.contains('is-focus')
     const rightBound = focused && panelEl ? panelEl.getBoundingClientRect().left - 18 : window.innerWidth - 96
-    const disc = planetDisc(camera, world.root)
-    const { cx, cy } = disc
+    // 只有球面世界需要"收进圆盘"这件事；平地上的标签只要不飘出屏幕
+    const isPlanet = (world.world?.kind ?? 'planet') === 'planet'
+    const disc = isPlanet ? planetDisc(camera, world.root) : null
+    const cx = disc?.cx ?? 0
+    const cy = disc?.cy ?? 0
     for (const m of markers) {
       projected.copy(m.anchor).applyMatrix4(world.root.matrixWorld)
       const facing = projected.dot(camera.position) / (projected.length() * camDirLen || 1)
@@ -63,7 +66,7 @@ export function createMarkers(world, onPick) {
       // 0.97 而不是 1.15：超过 1 就是画面外，标签会在角落被裁成半截
       const rawX = (projected.x * 0.5 + 0.5) * window.innerWidth
       const hidden =
-        facing < 0.18 ||
+        (isPlanet && facing < 0.18) ||
         projected.z > 1 ||
         Math.abs(projected.x) > 0.97 ||
         Math.abs(projected.y) > 0.97 ||
@@ -72,13 +75,18 @@ export function createMarkers(world, onPick) {
       if (hidden) continue
       let x = (projected.x * 0.5 + 0.5) * window.innerWidth
       let y = (-projected.y * 0.5 + 0.5) * window.innerHeight
-      // 沿半径外推 30px 后再收回圆盘内 93%，标签永远贴着星球、不越界
-      const ndx = x - cx
-      const ndy = y - cy
-      const nlen = Math.hypot(ndx, ndy) || 1
-      const clamped = Math.min(nlen + 30, disc.r * 0.93)
-      x = cx + (ndx / nlen) * clamped
-      y = cy + (ndy / nlen) * clamped
+      if (isPlanet) {
+        // 沿半径外推 30px 后再收回圆盘内 93%，标签永远贴着星球、不越界
+        const ndx = x - cx
+        const ndy = y - cy
+        const nlen = Math.hypot(ndx, ndy) || 1
+        const clamped = Math.min(nlen + 30, disc.r * 0.93)
+        x = cx + (ndx / nlen) * clamped
+        y = cy + (ndy / nlen) * clamped
+      } else {
+        // 平地上标签往上抬一点，正好停在地标顶上
+        y -= 18
+      }
       x = Math.min(Math.max(x, 96), rightBound)
       y = Math.min(Math.max(y, 56), window.innerHeight - 64)
       m.el.style.transform = `translate(-50%, -50%) translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`

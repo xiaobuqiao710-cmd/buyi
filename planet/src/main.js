@@ -40,6 +40,7 @@ document.documentElement.style.setProperty('--soil', theme.swatch[3])
 document.title = `${theme.name} · 宋建豪`
 
 const world = createWorld(scene, theme)
+cam.applyWorld(theme.world)
 
 // 标签的点击在 markers.js 里绑定好了，这里只决定"点了之后去哪一站"
 const markers = createMarkers(world, (id) => nav.activate(id))
@@ -253,7 +254,8 @@ if (isDebug) {
 
 resize()
 cam.shift.goal = cam.restingShift(false)
-world.root.position.y = 0.3
+// 球面世界把球抬高一点给底部标签让位；平地世界的地就在 y=0，不能抬
+world.root.position.y = (theme.world?.kind ?? 'planet') === 'planet' ? 0.3 : 0
 cam.snap()
 
 nav.initNav()

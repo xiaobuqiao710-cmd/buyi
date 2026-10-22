@@ -4,13 +4,13 @@
  * 致敬手绘森林：一棵占了半个星球的树、木头搭的桥、夜里飞的萤火虫。
  */
 import * as THREE from 'three'
-import { PLANET_R as R, surf, placeOn, mat, glowMat, house, pine, rock, lamp, seeded } from '../world/kit.js'
+import { PLANET_R as R, surf, placeOn, mat, glowMat, house, pine, rock, lamp, seeded, GROUND } from '../world/kit.js'
 
 const anchor = (p, k = 1.2) => surf(p.lat, p.lon, R * k)
 
 function put(g, obj, p, dLat = 0, dLon = 0, mode = 'upright', s = 1.6) {
   // 以「落点」为原点缩放：底边仍贴着球面，只是长得更高更粗，远处才读得出剪影
-  obj.scale.multiplyScalar(s)
+  obj.scale.multiplyScalar(s * GROUND.scale)
   placeOn(obj, p.lat + dLat, p.lon + dLon, R, mode)
   g.add(obj)
   return obj
@@ -50,6 +50,7 @@ function mushroom({ s = 1, cap = '#c2553c' } = {}) {
 }
 
 export default {
+world: { kind: 'island', radius: 6.8, spread: 4.2, scale: 1.5, camera: { dist: 13.0, focusDist: 10.4, phi: 0.28, lookY: 0.6 } },
   id: 'verdant',
   name: '巨树之下',
   nameEn: 'Under the Great Tree',
@@ -62,7 +63,7 @@ export default {
   atmosphere: '#b8d98a',
   lights: {
     sun: '#ffe6b0', duskSun: '#ff9a5c', fillSky: '#a8c8a0', fillGround: '#2c3c24',
-    rim: '#9fd08a', front: '#e8f0d0', sunIntensity: 2.6, fillIntensity: 0.66, rimIntensity: 0.85, ambient: 0.42, ambientColor: '#6f8f6a',
+    rim: '#9fd08a', front: '#e8f0d0', sunIntensity: 2.6, fillIntensity: 0.66, rimIntensity: 0.85, ambient: 0.55, ambientColor: '#6f8f6a',
   },
 
   build({ root, place }) {

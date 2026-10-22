@@ -411,6 +411,7 @@ function createContactCluster(lat, lon) {
 /* ------------------------------------------------------------------ 主题 */
 
 export default {
+  world: { kind: 'planet' },
   id: 'prince',
   name: '小王子',
   nameEn: 'Le Petit Prince',

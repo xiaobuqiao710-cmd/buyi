@@ -5,13 +5,13 @@
  * 只用青与琥珀两色打光，不用紫蓝弥散光晕。
  */
 import * as THREE from 'three'
-import { PLANET_R as R, surf, placeOn, mat, glowMat, tower, rock, seeded } from '../world/kit.js'
+import { PLANET_R as R, surf, placeOn, mat, glowMat, tower, rock, seeded, GROUND } from '../world/kit.js'
 
 const anchor = (p, k = 1.2) => surf(p.lat, p.lon, R * k)
 
 function put(g, obj, p, dLat = 0, dLon = 0, mode = 'upright', s = 1.6) {
   // 以「落点」为原点缩放：底边仍贴着球面，只是长得更高更粗，远处才读得出剪影
-  obj.scale.multiplyScalar(s)
+  obj.scale.multiplyScalar(s * GROUND.scale)
   placeOn(obj, p.lat + dLat, p.lon + dLon, R, mode)
   g.add(obj)
   return obj
@@ -55,6 +55,7 @@ function shuttle({ body = '#c9d6e2', light = '#5fe0ee' } = {}) {
 }
 
 export default {
+world: { kind: 'platform', radius: 7.2, spread: 4.6, scale: 1.1, camera: { dist: 13.5, focusDist: 10.8, phi: 0.3, lookY: 0.7 } },
   id: 'neon',
   name: '夜航站',
   nameEn: 'Night Terminal',
@@ -63,11 +64,11 @@ export default {
   swatch: ['#2c3644', '#5fe0ee', '#ffbf6b', '#05070d'],
   sky: { top: '#03060c', mid: '#0a1420', bottom: '#142233' },
   stars: { count: 900, size: 0.3, hue: 0.5, hueRange: 0.1, sat: 0.5, opacity: 0.7 },
-  terrain: { base: '#5a6674', patch: '#33707d', high: '#7d8898', low: '#4a5561', amp: 0.06, rough: 1.0 },
+  terrain: { base: '#76838f', patch: '#33707d', high: '#7d8898', low: '#4a5561', amp: 0.06, rough: 1.0 },
   atmosphere: '#4fd6e8',
   lights: {
     sun: '#cfe6ff', duskSun: '#ffb066', fillSky: '#6f8aa0', fillGround: '#141c24',
-    rim: '#4fd6e8', front: '#a8dcff', sunIntensity: 2.6, fillIntensity: 0.7, rimIntensity: 1.3, ambient: 0.9, ambientColor: '#5d7c8e', ambient: 0.5, ambientColor: '#3d5566',
+    rim: '#4fd6e8', front: '#a8dcff', sunIntensity: 2.6, fillIntensity: 0.7, rimIntensity: 1.3, ambient: 0.55, ambientColor: '#54707f',
   },
 
   build({ root, place }) {

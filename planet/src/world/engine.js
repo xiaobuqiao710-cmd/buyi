@@ -6,7 +6,7 @@
  * 主题负责摆人物与地标，引擎负责它们脚下的那颗球和头顶的天。
  */
 import * as THREE from 'three'
-import { PLANET_R, PLACE, surf, hash3, fbm, camDirection } from './kit.js'
+import { PLANET_R, PLACE, surf, hash3, fbm, camDirection, setGround, setThemeGround, glowMat } from './kit.js'
 
 /* ------------------------------------------------------------------ 天空 */
 
@@ -165,6 +165,171 @@ function createPlanet(root, terrain, atmosColor) {
   return { planet, atmosphere }
 }
 
+
+/* ------------------------------------------------------------------ 地面 */
+
+/**
+ * 平地的地形：一张细分网格 + 噪声起伏 + 顶点色 + 边缘淡出。
+ *
+ * 为什么用 PlaneGeometry 而不是 CircleGeometry：后者是一个三角扇，
+ * 所有三角形都从圆心发散，flat shading 下会在地面上压出一圈圈放射状光带。
+ * 方格网格没有这个方向性，价格也一样（96×96 ≈ 1.8 万三角面，和球一个量级）。
+ */
+function makeGround({ size = 52, segments = 96, heightAt, colorAt, fadeFrom = 0.34, fadeTo = 0.18 }) {
+  const geo = new THREE.PlaneGeometry(size, size, segments, segments)
+  geo.rotateX(-Math.PI / 2)
+  const pos = geo.attributes.position
+  const colors = new Float32Array(pos.count * 4)
+  const c = new THREE.Color()
+  const half = size / 2
+
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i)
+    const z = pos.getZ(i)
+    const r = Math.hypot(x, z) / half
+    const y = heightAt(x, z, r)
+    pos.setY(i, y)
+    colorAt(c, x, z, r, y)
+    colors[i * 4] = c.r
+    colors[i * 4 + 1] = c.g
+    colors[i * 4 + 2] = c.b
+    colors[i * 4 + 3] = 1 - THREE.MathUtils.smoothstep(r, fadeFrom, 1) * (1 - fadeTo)
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(colors, 4))
+  geo.computeVertexNormals()
+
+  return new THREE.Mesh(
+    geo,
+    new THREE.MeshStandardMaterial({
+      vertexColors: true,
+      flatShading: true,
+      roughness: 0.95,
+      metalness: 0,
+      transparent: true,
+    }),
+  )
+}
+
+function paletteColor(terrain) {
+  const base = new THREE.Color(terrain.base)
+  const patch = new THREE.Color(terrain.patch)
+  const high = new THREE.Color(terrain.high)
+  const low = new THREE.Color(terrain.low ?? terrain.base)
+  return (c, x, z, r, y) => {
+    const p = fbm(x * 0.22 + 9.1, 0.5, z * 0.22 - 3.3)
+    c.copy(base)
+    c.lerp(patch, THREE.MathUtils.smoothstep(p, 0.42, 0.68))
+    c.lerp(high, THREE.MathUtils.smoothstep(y, 0.3, 0.9) * 0.85)
+    c.lerp(low, THREE.MathUtils.smoothstep(-y, 0.15, 0.5) * 0.6)
+    const j = 0.93 + hash3(x * 3.1, 0.7, z * 2.7) * 0.14
+    c.multiplyScalar(j).convertSRGBToLinear()
+  }
+}
+
+function createGround(root, theme) {
+  const world = theme.world ?? { kind: 'planet' }
+  const kind = world.kind ?? 'planet'
+  const T = theme.terrain
+  const amp = T.amp ?? 0.09
+  const colorAt = paletteColor(T)
+
+  if (kind === 'planet') return { planet: createPlanet(root, T, theme.atmosphere), atmosphere: null }
+
+  let mesh
+
+  if (kind === 'plain' || kind === 'dune') {
+    // 雪原 / 沙海：两种高度场，同一块网格
+    const heightAt =
+      kind === 'plain'
+        ? (x, z) =>
+            (fbm(x * 0.11, 0.5, z * 0.11) - 0.5) * amp * 22 +
+            (fbm(x * 0.42 + 3.1, 0.5, z * 0.42 - 1.7) - 0.5) * amp * 5
+        : (x, z) => {
+            const ridge = Math.sin(x * 0.42 + Math.sin(z * 0.14) * 2.4 + fbm(x * 0.16, 0.5, z * 0.16) * 2)
+            return Math.pow(ridge * 0.5 + 0.5, 1.8) * amp * 13 + (fbm(x * 0.3, 0.5, z * 0.3) - 0.5) * amp * 3
+          }
+    const fade = kind === 'plain' ? [0.26, 0.0] : [0.24, 0.0]
+    mesh = makeGround({ size: 56, segments: 96, heightAt, colorAt, fadeFrom: fade[0], fadeTo: fade[1] })
+    setGround({ h: (x, z) => heightAt(x, z, 0) })
+  } else if (kind === 'island') {
+    const R = world.radius ?? 6.6
+    const heightAt = (x, z, r) => {
+      const bump = (fbm(x * 0.34, 0.5, z * 0.34) - 0.5) * amp * 14
+      return bump - THREE.MathUtils.smoothstep(r, 0.78, 1) * 0.5
+    }
+    mesh = makeGround({ size: R * 2, segments: 72, heightAt, colorAt, fadeFrom: 0.9, fadeTo: 0 })
+    const skirt = new THREE.Mesh(
+      new THREE.ConeGeometry(R * 1.01, R * 0.9, 64, 1, true),
+      new THREE.MeshStandardMaterial({ color: new THREE.Color(T.high), roughness: 0.95, flatShading: true, side: THREE.DoubleSide }),
+    )
+    skirt.position.y = -R * 0.45
+    root.add(skirt)
+    setGround({ h: (x, z, r) => heightAt(x, z, Math.hypot(x, z) / R) })
+  } else if (kind === 'terrace') {
+    // 台地：三层石阶，顶面是平的
+    mesh = new THREE.Group()
+    const R = world.radius ?? 7.6
+    const steps = [
+      { r: R, y: 0, color: T.base },
+      { r: R * 0.68, y: 0.5, color: T.patch },
+      { r: R * 0.4, y: 1.0, color: T.high },
+    ]
+    steps.forEach((st) => {
+      const disc = makeGround({
+        size: st.r * 2,
+        segments: 48,
+        heightAt: (x, z) => (fbm(x * 0.4, 0.5, z * 0.4) - 0.5) * amp * 2.4,
+        colorAt: (c, x, z) => {
+          c.set(st.color)
+          c.multiplyScalar(0.9 + hash3(x * 2.3, 0.4, z * 1.9) * 0.2).convertSRGBToLinear()
+        },
+        fadeFrom: 0.86,
+        fadeTo: 0,
+      })
+      disc.position.y = st.y
+      mesh.add(disc)
+    })
+    mesh.position.y = -0.5
+    root.add(mesh)
+    setGround({ h: () => 0 })
+  } else {
+    // platform：金属平台 + 边缘灯环 + 两条跑道
+    const R = world.radius ?? 7
+    mesh = new THREE.Group()
+    const deck = makeGround({
+      size: R * 2,
+      segments: 48,
+      heightAt: (x, z) => (fbm(x * 0.5, 0.5, z * 0.5) - 0.5) * amp * 1.4,
+      colorAt: (c, x, z) => {
+        const p = fbm(x * 0.4 + 4.1, 0.5, z * 0.4)
+        c.copy(new THREE.Color(T.base)).lerp(new THREE.Color(T.patch), THREE.MathUtils.smoothstep(p, 0.45, 0.7))
+        c.multiplyScalar(0.9 + hash3(x * 4.1, 0.9, z * 3.7) * 0.2).convertSRGBToLinear()
+      },
+      fadeFrom: 0.88,
+      fadeTo: 0,
+    })
+    mesh.add(deck)
+    const rim = new THREE.Mesh(
+      new THREE.TorusGeometry(R * 0.99, 0.028, 8, 96),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(T.high) }),
+    )
+    rim.rotation.x = -Math.PI / 2
+    rim.position.y = 0.03
+    mesh.add(rim)
+    for (const rot of [0, Math.PI / 2]) {
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(R * 1.5, 0.012, 0.075), glowMat(T.high, 0.26))
+      stripe.position.y = 0.04
+      stripe.rotation.y = rot
+      mesh.add(stripe)
+    }
+    root.add(mesh)
+    setGround({ h: () => 0 })
+  }
+
+  if (mesh && !mesh.parent) root.add(mesh)
+  return { planet: mesh, atmosphere: null }
+}
+
 /* ------------------------------------------------------------------ 组装 */
 
 export function createWorld(scene, theme) {
@@ -174,7 +339,9 @@ export function createWorld(scene, theme) {
   const root = new THREE.Group()
   scene.add(root)
 
-  const { planet, atmosphere } = createPlanet(root, theme.terrain, theme.atmosphere)
+  // 先告诉 kit「这个主题的地是什么形状」，再由主题自己摆东西
+  setThemeGround(theme.world)
+  const { planet, atmosphere } = createGround(root, theme)
 
   // 一组灯光：清晨起步，日落时整体偏暖偏低
   const L = theme.lights ?? {}
@@ -230,7 +397,7 @@ export function createWorld(scene, theme) {
     t += dt
     dusk += (duskTarget - dusk) * Math.min(1, dt * 2.4)
     uniforms.uDusk.value = dusk
-    atmosphere.material.uniforms.uDusk.value = dusk
+    if (atmosphere) atmosphere.material.uniforms.uDusk.value = dusk
 
     // 光随日落变暖、变低
     sun.intensity = (L.sunIntensity ?? 2.4) - dusk * 0.9
@@ -255,7 +422,7 @@ export function createWorld(scene, theme) {
   }
 
   return {
-    root, sky, sun, stars, planet, atmosphere,
+    root, sky, sun, stars, planet, atmosphere, world: theme.world ?? { kind: 'planet' },
     anchors, pickables,
     theme,
     setDusk, update,

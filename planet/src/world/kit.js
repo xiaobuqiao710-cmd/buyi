@@ -46,11 +46,62 @@ export function fbm(x, y, z, octaves = 4) {
   return sum
 }
 
-/** 纬度 / 经度（度）→ 星球表面上的点 */
+/**
+ * 当前世界的「地」：只有小王子那颗是球，其余主题是平的地面。
+ *
+ * 这是启动时一次性写死的引导状态（`createWorld` 在主题构建前设好），
+ * 之后整场运行不再变 —— 不要每帧改它，否则 `placeOn` 会把已经摆好的东西搬走。
+ *   kind: 'planet' | 'plain' | 'dune' | 'island' | 'terrace' | 'platform'
+ *   R:    地面半径（kind !== 'planet' 时有效）
+ *   h(x, z): 该点地面高度
+ *   scale: 道具整体放大倍数（平地比球大，小房子要跟着变大）
+ */
+export const GROUND = {
+  kind: 'planet',
+  R: 5.4,      // 地面网格半径
+  spreadR: 4.6, // 地标可以摆到的半径（比网格小一点，免得站在悬崖外）
+  scale: 1,
+  h: () => 0,
+}
+
+export function setGround(def) {
+  Object.assign(GROUND, def)
+  return GROUND
+}
+
+/** 纬度 → 地面半径：越靠北越靠近圆心，赤道偏外（0.12R–0.98R） */
+export function groundRadius(lat) {
+  return THREE.MathUtils.clamp((90 - lat) / 120, 0.12, 0.98) * GROUND.spreadR
+}
+
+/** 纬度 / 经度（度）→ 地表上的点；球面与平地共用同一个「经纬」口径 */
 export function surf(lat, lon, r = PLANET_R) {
-  const a = THREE.MathUtils.degToRad(lat)
+  if (GROUND.kind === 'planet') {
+    const a = THREE.MathUtils.degToRad(lat)
+    const b = THREE.MathUtils.degToRad(lon)
+    return new THREE.Vector3(Math.cos(a) * Math.sin(b) * r, Math.sin(a) * r, Math.cos(a) * Math.cos(b) * r)
+  }
+  const rad = groundRadius(lat)
   const b = THREE.MathUtils.degToRad(lon)
-  return new THREE.Vector3(Math.cos(a) * Math.sin(b) * r, Math.sin(a) * r, Math.cos(a) * Math.cos(b) * r)
+  const x = Math.sin(b) * rad
+  const z = Math.cos(b) * rad
+  // 平地上 r 的意义变成「抬高一点」：锚点比地标高，标签才不糊在房顶上
+  return new THREE.Vector3(x, GROUND.h(x, z) + (r / PLANET_R - 1) * 0.9, z)
+}
+
+/** 按主题的世界设定切换「地」（createWorld 调用一次） */
+export function setThemeGround(world) {
+  if (!world || !world.kind || world.kind === 'planet') {
+    return setGround({ kind: 'planet', R: PLANET_R, spreadR: PLANET_R, scale: 1, h: () => 0 })
+  }
+  const R = world.radius ?? 6
+  return setGround({
+    kind: world.kind,
+    R,
+    spreadR: world.spread ?? R * 0.82,
+    scale: world.scale ?? 1,
+    h: world.h ?? (() => 0),
+  })
 }
 
 export const UP = new THREE.Vector3(0, 1, 0)
@@ -65,6 +116,11 @@ export const DEFAULT_VIEW = new THREE.Spherical(1, Math.PI / 2 - 0.3, 0.96)
 export function placeOn(obj, lat, lon, r = PLANET_R, mode = 'normal') {
   const p = surf(lat, lon, r)
   obj.position.copy(p)
+  if (GROUND.kind !== 'planet') {
+    // 平地上「立着」就是世界 +Y，不存在法线倾斜问题
+    obj.quaternion.identity()
+    return obj
+  }
   const n = p.clone().normalize()
   let up = n
   if (mode === 'upright') {
@@ -85,7 +141,7 @@ export function placeOn(obj, lat, lon, r = PLANET_R, mode = 'normal') {
  */
 export function faceToward(obj, target) {
   const p = obj.position
-  const normal = p.clone().normalize()
+  const normal = GROUND.kind === 'planet' ? p.clone().normalize() : UP.clone()
   const dir = target.clone().sub(p).normalize()
   const z = dir.sub(normal.clone().multiplyScalar(dir.dot(normal))).normalize()
   const y = normal
@@ -110,6 +166,15 @@ export const add = (parent, children) => {
   return parent
 }
 
+
+/** 摆一个主题物件：缩放（含地面尺度）→ 落位 → 可选朝向镜头 */
+export function put(parent, obj, lat, lon, mode = 'upright', s = 1, camDir = null) {
+  if (s !== 1 || GROUND.scale !== 1) obj.scale.multiplyScalar(s * GROUND.scale)
+  placeOn(obj, lat, lon, PLANET_R, mode)
+  if (camDir) faceToward(obj, camDir)
+  parent.add(obj)
+  return obj
+}
 
 /* ------------------------------------------------------------ 主题通用零件 */
 
